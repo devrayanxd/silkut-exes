@@ -1,0 +1,243 @@
+name: Build Silkut
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pillow pyinstaller
+
+      - name: Pre-cache ffmpeg
+        run: python -c "import static_ffmpeg; static_ffmpeg.add_paths()"
+
+      - name: Create Silkut.ico
+        run: |
+          python -c "
+          from PIL import Image
+          img = Image.open('Silkut.png').convert('RGBA')
+          sizes = [(16,16),(32,32),(48,48),(64,64),(128,128),(256,256)]
+          imgs  = [img.resize(s, Image.LANCZOS) for s in sizes]
+          imgs[0].save('Silkut.ico', format='ICO', sizes=sizes, append_images=imgs[1:])
+          "
+
+      - name: Create version.txt
+        shell: bash
+        run: |
+          cat > version.txt << 'EOF'
+          VSVersionInfo(
+            ffi=FixedFileInfo(
+              filevers=(2,0,0,0),
+              prodvers=(2,0,0,0),
+              mask=0x3f,
+              flags=0x0,
+              OS=0x40004,
+              fileType=0x1,
+              subtype=0x0,
+              date=(0,0)
+            ),
+            kids=[
+              StringFileInfo([
+                StringTable(u'040904B0',[
+                  StringStruct(u'CompanyName',      u'Orvil Software'),
+                  StringStruct(u'FileDescription',  u'Silkut'),
+                  StringStruct(u'FileVersion',      u'2.0.0'),
+                  StringStruct(u'InternalName',     u'Silkut'),
+                  StringStruct(u'LegalCopyright',   u'Orvil Software'),
+                  StringStruct(u'OriginalFilename', u'Silkut.exe'),
+                  StringStruct(u'ProductName',      u'Silkut'),
+                  StringStruct(u'ProductVersion',   u'2.0.0'),
+                ])
+              ]),
+              VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
+            ]
+          )
+          EOF
+
+      - name: Build Silkut.exe
+        run: >
+          pyinstaller app.py
+          --name Silkut
+          --onefile
+          --noconsole
+          --icon Silkut.ico
+          --add-data "app.html;."
+          --add-data "Silkut.png;."
+          --collect-all static_ffmpeg
+          --collect-all webview
+          --hidden-import flask
+          --hidden-import clr_loader
+          --version-file version.txt
+
+      - name: Upload Silkut.exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: Silkut-Windows
+          path: dist/Silkut.exe
+          retention-days: 30
+
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pyinstaller
+
+      - name: Pre-cache ffmpeg
+        run: python -c "import static_ffmpeg; static_ffmpeg.add_paths()"
+
+      - name: Create Silkut.icns
+        run: |
+          mkdir -p Silkut.iconset
+          sips -z 16   16   Silkut.png --out Silkut.iconset/icon_16x16.png
+          sips -z 32   32   Silkut.png --out Silkut.iconset/icon_16x16@2x.png
+          sips -z 32   32   Silkut.png --out Silkut.iconset/icon_32x32.png
+          sips -z 64   64   Silkut.png --out Silkut.iconset/icon_32x32@2x.png
+          sips -z 128  128  Silkut.png --out Silkut.iconset/icon_128x128.png
+          sips -z 256  256  Silkut.png --out Silkut.iconset/icon_128x128@2x.png
+          sips -z 256  256  Silkut.png --out Silkut.iconset/icon_256x256.png
+          sips -z 512  512  Silkut.png --out Silkut.iconset/icon_256x256@2x.png
+          sips -z 512  512  Silkut.png --out Silkut.iconset/icon_512x512.png
+          cp Silkut.png Silkut.iconset/icon_512x512@2x.png
+          iconutil -c icns Silkut.iconset -o Silkut.icns
+
+      - name: Build Silkut.app
+        run: >
+          pyinstaller app.py
+          --name Silkut
+          --windowed
+          --icon Silkut.icns
+          --add-data "app.html:."
+          --add-data "Silkut.png:."
+          --collect-all static_ffmpeg
+          --collect-all webview
+          --hidden-import flask
+
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Package Silkut.dmg
+        run: |
+          create-dmg \
+            --volname "Silkut" \
+            --volicon "Silkut.icns" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 128 \
+            --icon "Silkut.app" 150 185 \
+            --hide-extension "Silkut.app" \
+            --app-drop-link 450 185 \
+            "Silkut.dmg" \
+            "dist/"
+
+      - name: Upload Silkut.dmg
+        uses: actions/upload-artifact@v4
+        with:
+          name: Silkut-macOS
+          path: Silkut.dmg
+          retention-days: 30
+
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y \
+            python3-gi python3-gi-cairo gir1.2-gtk-3.0 \
+            gir1.2-webkit2-4.1 libwebkit2gtk-4.1-dev \
+            libgirepository1.0-dev gcc libcairo2-dev \
+            pkg-config python3-dev \
+            fuse libfuse2 desktop-file-utils
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pyinstaller
+
+      - name: Pre-cache ffmpeg
+        run: python -c "import static_ffmpeg; static_ffmpeg.add_paths()"
+
+      - name: Build Silkut binary
+        run: >
+          pyinstaller app.py
+          --name Silkut
+          --onefile
+          --add-data "app.html:."
+          --add-data "Silkut.png:."
+          --collect-all static_ffmpeg
+          --collect-all webview
+          --hidden-import flask
+
+      - name: Download appimagetool
+        run: |
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage \
+               -O appimagetool
+          chmod +x appimagetool
+
+      - name: Build AppDir
+        run: |
+          mkdir -p AppDir/usr/bin
+          cp dist/Silkut AppDir/usr/bin/Silkut
+          chmod +x AppDir/usr/bin/Silkut
+
+          cat > AppDir/Silkut.desktop << 'EOF'
+          [Desktop Entry]
+          Name=Silkut
+          Exec=Silkut
+          Icon=Silkut
+          Type=Application
+          Categories=AudioVideo;
+          EOF
+
+          cp Silkut.png AppDir/Silkut.png
+
+          cat > AppDir/AppRun << 'EOF'
+          #!/bin/bash
+          SELF=$(readlink -f "$0")
+          HERE=$(dirname "$SELF")
+          exec "$HERE/usr/bin/Silkut" "$@"
+          EOF
+          chmod +x AppDir/AppRun
+
+      - name: Package Silkut.AppImage
+        run: ARCH=x86_64 ./appimagetool AppDir Silkut.AppImage
+
+      - name: Upload Silkut.AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: Silkut-Linux
+          path: Silkut.AppImage
+          retention-days: 30
