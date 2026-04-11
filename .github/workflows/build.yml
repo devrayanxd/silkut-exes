@@ -87,21 +87,10 @@ jobs:
           --collect-all webview
           --hidden-import flask
           --hidden-import clr_loader
+          --hidden-import werkzeug
+          --hidden-import werkzeug.routing
+          --hidden-import werkzeug.routing.exceptions
           --version-file version.txt
-          --exclude-module matplotlib
-          --exclude-module numpy
-          --exclude-module pandas
-          --exclude-module scipy
-          --exclude-module PIL
-          --exclude-module tkinter
-          --exclude-module unittest
-          --exclude-module pydoc
-          --exclude-module doctest
-          --exclude-module difflib
-          --exclude-module ftplib
-          --exclude-module smtplib
-          --exclude-module telnetlib
-          --exclude-module turtle
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
@@ -157,19 +146,9 @@ jobs:
           --collect-all static_ffmpeg
           --collect-all webview
           --hidden-import flask
-          --exclude-module matplotlib
-          --exclude-module numpy
-          --exclude-module pandas
-          --exclude-module scipy
-          --exclude-module tkinter
-          --exclude-module unittest
-          --exclude-module pydoc
-          --exclude-module doctest
-          --exclude-module difflib
-          --exclude-module ftplib
-          --exclude-module smtplib
-          --exclude-module telnetlib
-          --exclude-module turtle
+          --hidden-import werkzeug
+          --hidden-import werkzeug.routing
+          --hidden-import werkzeug.routing.exceptions
 
       - name: Install create-dmg
         run: brew install create-dmg
