@@ -1,4 +1,4 @@
-name: Build Silkut Windows
+name: Build Silkut
 
 on:
   push:
@@ -90,10 +90,6 @@ jobs:
           --exclude-module PIL
           --exclude-module tkinter
           --exclude-module unittest
-          --exclude-module email
-          --exclude-module html
-          --exclude-module http
-          --exclude-module xml
           --exclude-module pydoc
           --exclude-module doctest
           --exclude-module difflib
@@ -107,4 +103,94 @@ jobs:
         with:
           name: Silkut-Windows
           path: dist/Silkut.exe
+          retention-days: 30
+
+
+  build-macos:
+    runs-on: macos-13
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pyinstaller
+
+      - name: Pre-cache ffmpeg
+        run: python -c "import static_ffmpeg; static_ffmpeg.add_paths()"
+
+      - name: Create Silkut.icns
+        run: |
+          mkdir -p Silkut.iconset
+          sips -z 16   16   Silkut.png --out Silkut.iconset/icon_16x16.png
+          sips -z 32   32   Silkut.png --out Silkut.iconset/icon_16x16@2x.png
+          sips -z 32   32   Silkut.png --out Silkut.iconset/icon_32x32.png
+          sips -z 64   64   Silkut.png --out Silkut.iconset/icon_32x32@2x.png
+          sips -z 128  128  Silkut.png --out Silkut.iconset/icon_128x128.png
+          sips -z 256  256  Silkut.png --out Silkut.iconset/icon_128x128@2x.png
+          sips -z 256  256  Silkut.png --out Silkut.iconset/icon_256x256.png
+          sips -z 512  512  Silkut.png --out Silkut.iconset/icon_256x256@2x.png
+          sips -z 512  512  Silkut.png --out Silkut.iconset/icon_512x512.png
+          cp Silkut.png Silkut.iconset/icon_512x512@2x.png
+          iconutil -c icns Silkut.iconset -o Silkut.icns
+
+      - name: Build Silkut.app
+        env:
+          MACOSX_DEPLOYMENT_TARGET: "12.0"
+        run: >
+          pyinstaller app.py
+          --name Silkut
+          --windowed
+          --icon Silkut.icns
+          --add-data "app.html:."
+          --add-data "Silkut.png:."
+          --collect-all static_ffmpeg
+          --collect-all webview
+          --hidden-import flask
+          --exclude-module matplotlib
+          --exclude-module numpy
+          --exclude-module pandas
+          --exclude-module scipy
+          --exclude-module tkinter
+          --exclude-module unittest
+          --exclude-module pydoc
+          --exclude-module doctest
+          --exclude-module difflib
+          --exclude-module ftplib
+          --exclude-module smtplib
+          --exclude-module telnetlib
+          --exclude-module turtle
+
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Package Silkut.dmg
+        run: |
+          create-dmg \
+            --volname "Silkut" \
+            --volicon "Silkut.icns" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 128 \
+            --icon "Silkut.app" 150 185 \
+            --hide-extension "Silkut.app" \
+            --app-drop-link 450 185 \
+            "Silkut.dmg" \
+            "dist/"
+
+      - name: Compress DMG
+        run: |
+          hdiutil convert Silkut.dmg -format UDBZ -o Silkut-compressed.dmg
+          mv Silkut-compressed.dmg Silkut.dmg
+
+      - name: Upload Silkut.dmg
+        uses: actions/upload-artifact@v4
+        with:
+          name: Silkut-macOS
+          path: Silkut.dmg
           retention-days: 7
