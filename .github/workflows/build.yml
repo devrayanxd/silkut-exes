@@ -107,7 +107,7 @@ jobs:
 
 
   build-macos:
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
 
       - name: Checkout
