@@ -83,6 +83,31 @@ jobs:
           --hidden-import flask
           --hidden-import clr_loader
           --version-file version.txt
+          --exclude-module matplotlib
+          --exclude-module numpy
+          --exclude-module pandas
+          --exclude-module scipy
+          --exclude-module PIL
+          --exclude-module tkinter
+          --exclude-module unittest
+          --exclude-module email
+          --exclude-module html
+          --exclude-module http
+          --exclude-module xml
+          --exclude-module pydoc
+          --exclude-module doctest
+          --exclude-module difflib
+          --exclude-module ftplib
+          --exclude-module getpass
+          --exclude-module imaplib
+          --exclude-module smtplib
+          --exclude-module telnetlib
+          --exclude-module turtle
+
+      - name: Compress exe with UPX
+        run: |
+          choco install upx -y --no-progress
+          upx --best --lzma dist/Silkut.exe
 
       - name: Upload Silkut.exe
         uses: actions/upload-artifact@v4
@@ -136,6 +161,23 @@ jobs:
           --collect-all static_ffmpeg
           --collect-all webview
           --hidden-import flask
+          --exclude-module matplotlib
+          --exclude-module numpy
+          --exclude-module pandas
+          --exclude-module scipy
+          --exclude-module tkinter
+          --exclude-module unittest
+          --exclude-module email
+          --exclude-module html
+          --exclude-module http
+          --exclude-module xml
+          --exclude-module pydoc
+          --exclude-module doctest
+          --exclude-module difflib
+          --exclude-module ftplib
+          --exclude-module smtplib
+          --exclude-module telnetlib
+          --exclude-module turtle
 
       - name: Install create-dmg
         run: brew install create-dmg
@@ -154,90 +196,14 @@ jobs:
             "Silkut.dmg" \
             "dist/"
 
+      - name: Compress DMG
+        run: |
+          hdiutil convert Silkut.dmg -format UDBZ -o Silkut-compressed.dmg
+          mv Silkut-compressed.dmg Silkut.dmg
+
       - name: Upload Silkut.dmg
         uses: actions/upload-artifact@v4
         with:
           name: Silkut-macOS
           path: Silkut.dmg
-          retention-days: 30
-
-
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install system deps
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y \
-            python3-gi python3-gi-cairo gir1.2-gtk-3.0 \
-            gir1.2-webkit2-4.1 libwebkit2gtk-4.1-dev \
-            libgirepository1.0-dev gcc libcairo2-dev \
-            pkg-config python3-dev \
-            fuse libfuse2 desktop-file-utils
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt pyinstaller
-
-      - name: Pre-cache ffmpeg
-        run: python -c "import static_ffmpeg; static_ffmpeg.add_paths()"
-
-      - name: Build Silkut binary
-        run: >
-          pyinstaller app.py
-          --name Silkut
-          --onefile
-          --add-data "app.html:."
-          --add-data "Silkut.png:."
-          --collect-all static_ffmpeg
-          --collect-all webview
-          --hidden-import flask
-
-      - name: Download appimagetool
-        run: |
-          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage \
-               -O appimagetool
-          chmod +x appimagetool
-
-      - name: Build AppDir
-        run: |
-          mkdir -p AppDir/usr/bin
-          cp dist/Silkut AppDir/usr/bin/Silkut
-          chmod +x AppDir/usr/bin/Silkut
-
-          cat > AppDir/Silkut.desktop << 'EOF'
-          [Desktop Entry]
-          Name=Silkut
-          Exec=Silkut
-          Icon=Silkut
-          Type=Application
-          Categories=AudioVideo;
-          EOF
-
-          cp Silkut.png AppDir/Silkut.png
-
-          cat > AppDir/AppRun << 'EOF'
-          #!/bin/bash
-          SELF=$(readlink -f "$0")
-          HERE=$(dirname "$SELF")
-          exec "$HERE/usr/bin/Silkut" "$@"
-          EOF
-          chmod +x AppDir/AppRun
-
-      - name: Package Silkut.AppImage
-        run: ARCH=x86_64 ./appimagetool AppDir Silkut.AppImage
-
-      - name: Upload Silkut.AppImage
-        uses: actions/upload-artifact@v4
-        with:
-          name: Silkut-Linux
-          path: Silkut.AppImage
           retention-days: 30
