@@ -5,6 +5,11 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag (e.g. v2.0)'
+        required: true
+        default: 'v2.0'
 
 jobs:
 
@@ -98,12 +103,12 @@ jobs:
           --exclude-module telnetlib
           --exclude-module turtle
 
-      - name: Upload Silkut.exe
+      - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: Silkut-Windows
           path: dist/Silkut.exe
-          retention-days: 30
+          retention-days: 7
 
 
   build-macos:
@@ -188,9 +193,42 @@ jobs:
           hdiutil convert Silkut.dmg -format UDBZ -o Silkut-compressed.dmg
           mv Silkut-compressed.dmg Silkut.dmg
 
-      - name: Upload Silkut.dmg
+      - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: Silkut-macOS
           path: Silkut.dmg
           retention-days: 7
+
+
+  release:
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Silkut-Windows
+          path: artifacts/windows
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Silkut-macOS
+          path: artifacts/macos
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.release_tag || github.ref_name }}
+          name: Silkut ${{ github.event.inputs.release_tag || github.ref_name }}
+          draft: false
+          prerelease: false
+          files: |
+            artifacts/windows/Silkut.exe
+            artifacts/macos/Silkut.dmg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
