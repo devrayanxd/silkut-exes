@@ -227,12 +227,6 @@ jobs:
         with:
           tag_name: ${{ github.event.inputs.release_tag || github.ref_name }}
           name: Silkut ${{ github.event.inputs.release_tag || github.ref_name }}
-          body: |
-            ## What's new in v2.1
-            - Arabic logo name "سيلكت" in the nav when Arabic is selected
-            - Choose your output folder — saved permanently
-            - Media preview on the result screen
-            - No more CMD window flashing on startup
           draft: false
           prerelease: false
           files: |
