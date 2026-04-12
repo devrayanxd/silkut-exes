@@ -90,6 +90,10 @@ jobs:
           --hidden-import werkzeug
           --hidden-import werkzeug.routing
           --hidden-import werkzeug.routing.exceptions
+          --hidden-import difflib
+          --hidden-import xml
+          --hidden-import xml.etree.ElementTree
+          --hidden-import pkg_resources
           --version-file version.txt
 
       - name: Upload Windows artifact
@@ -149,6 +153,10 @@ jobs:
           --hidden-import werkzeug
           --hidden-import werkzeug.routing
           --hidden-import werkzeug.routing.exceptions
+          --hidden-import difflib
+          --hidden-import xml
+          --hidden-import xml.etree.ElementTree
+          --hidden-import pkg_resources
 
       - name: Install create-dmg
         run: brew install create-dmg
@@ -186,6 +194,25 @@ jobs:
     permissions:
       contents: write
     steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Delete existing release and tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ github.event.inputs.release_tag || github.ref_name }}"
+          
+          # Delete release if exists
+          RELEASE_ID=$(gh release view "$TAG" --json id -q .id 2>/dev/null || echo "")
+          if [ -n "$RELEASE_ID" ]; then
+            gh release delete "$TAG" --yes
+            echo "Deleted release $TAG"
+          fi
+          
+          # Delete tag if exists
+          git push origin ":refs/tags/$TAG" 2>/dev/null || echo "Tag not found or already deleted"
 
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
