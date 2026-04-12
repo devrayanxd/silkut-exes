@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Release tag (e.g. v2.0)'
+        description: 'Release tag (e.g. v2.1)'
         required: true
-        default: 'v2.0'
+        default: 'v2.1'
 
 jobs:
 
@@ -47,8 +47,8 @@ jobs:
           cat > version.txt << 'EOF'
           VSVersionInfo(
             ffi=FixedFileInfo(
-              filevers=(2,0,0,0),
-              prodvers=(2,0,0,0),
+              filevers=(2,1,0,0),
+              prodvers=(2,1,0,0),
               mask=0x3f,
               flags=0x0,
               OS=0x40004,
@@ -61,12 +61,12 @@ jobs:
                 StringTable(u'040904B0',[
                   StringStruct(u'CompanyName',      u'Orvil Software'),
                   StringStruct(u'FileDescription',  u'Silkut'),
-                  StringStruct(u'FileVersion',      u'2.0.0'),
+                  StringStruct(u'FileVersion',      u'2.1.0'),
                   StringStruct(u'InternalName',     u'Silkut'),
                   StringStruct(u'LegalCopyright',   u'Orvil Software'),
                   StringStruct(u'OriginalFilename', u'Silkut.exe'),
                   StringStruct(u'ProductName',      u'Silkut'),
-                  StringStruct(u'ProductVersion',   u'2.0.0'),
+                  StringStruct(u'ProductVersion',   u'2.1.0'),
                 ])
               ]),
               VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
@@ -203,15 +203,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${{ github.event.inputs.release_tag || github.ref_name }}"
-          
-          # Delete release if exists
           RELEASE_ID=$(gh release view "$TAG" --json id -q .id 2>/dev/null || echo "")
           if [ -n "$RELEASE_ID" ]; then
             gh release delete "$TAG" --yes
             echo "Deleted release $TAG"
           fi
-          
-          # Delete tag if exists
           git push origin ":refs/tags/$TAG" 2>/dev/null || echo "Tag not found or already deleted"
 
       - name: Download Windows artifact
@@ -231,6 +227,12 @@ jobs:
         with:
           tag_name: ${{ github.event.inputs.release_tag || github.ref_name }}
           name: Silkut ${{ github.event.inputs.release_tag || github.ref_name }}
+          body: |
+            ## What's new in v2.1
+            - Arabic logo name "سيلكت" in the nav when Arabic is selected
+            - Choose your output folder — saved permanently
+            - Media preview on the result screen
+            - No more CMD window flashing on startup
           draft: false
           prerelease: false
           files: |
