@@ -69,17 +69,17 @@ nav {
 .nav-left { display: flex; align-items: center; gap: 12px; }
 .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
 .nav-logo img { width: 22px; height: 22px; border-radius: 6px; }
-.nav-logo span { font-size: 15px; font-weight: 800; color: var(--text); letter-spacing: -.4px; }
+.nav-logo-en { font-size: 15px; font-weight: 800; color: var(--text); letter-spacing: -.4px; }
+.nav-logo-ar { font-size: 15px; font-weight: 800; color: var(--text); font-family: var(--font-ar); display: none; }
+body.lang-ar .nav-logo-en { display: none; }
+body.lang-ar .nav-logo-ar { display: block; }
 .nav-sep { width: 1px; height: 16px; background: var(--border2); }
 .nav-screen-label { font-size: 11px; color: var(--text3); font-weight: 600; letter-spacing: .04em; }
-
 .nav-right { display: flex; align-items: center; gap: 8px; }
 
 /* Lang toggle */
 .lang-btn {
-  display: flex;
-  align-items: center;
-  gap: 2px;
+  display: flex; align-items: center; gap: 2px;
   background: var(--surface);
   border: 1px solid var(--border2);
   border-radius: 8px;
@@ -87,8 +87,7 @@ nav {
   cursor: pointer;
 }
 .lang-opt {
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 11px; font-weight: 700;
   padding: 3px 9px;
   border-radius: 5px;
   color: var(--text3);
@@ -100,16 +99,12 @@ nav {
 
 /* Back button */
 .back-btn {
-  display: none;
-  align-items: center;
-  gap: 6px;
+  display: none; align-items: center; gap: 6px;
   background: none;
   border: 1px solid var(--border2);
   border-radius: 8px;
   color: var(--text2);
-  font-family: inherit;
-  font-size: 11px;
-  font-weight: 600;
+  font-family: inherit; font-size: 11px; font-weight: 600;
   padding: 5px 12px;
   cursor: pointer;
   transition: all .15s;
@@ -124,20 +119,13 @@ body.lang-ar .back-btn svg { transform: scaleX(-1); }
 
 /* ── SCREEN 1: HOME ── */
 #s-home {
-  max-width: 680px;
-  width: 100%;
+  max-width: 680px; width: 100%;
   margin: 0 auto;
   padding: 40px 24px 32px;
   gap: 16px;
 }
-
 .home-hero { margin-bottom: 8px; }
-.home-hero h1 {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -.6px;
-  margin-bottom: 4px;
-}
+.home-hero h1 { font-size: 22px; font-weight: 800; letter-spacing: -.6px; margin-bottom: 4px; }
 .home-hero p { font-size: 12px; color: var(--text3); }
 
 /* Drop zone */
@@ -156,33 +144,22 @@ body.lang-ar .back-btn svg { transform: scaleX(-1); }
 .drop-empty { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .drop-ico-wrap {
   width: 48px; height: 48px;
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text3);
+  background: var(--surface); border: 1px solid var(--border2); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center; color: var(--text3);
 }
 .drop-label { font-size: 13px; font-weight: 600; color: var(--text2); }
 .drop-formats { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 4px; }
 .drop-formats code {
-  font-family: monospace;
-  font-size: 10px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 2px 6px;
-  color: var(--text3);
+  font-family: monospace; font-size: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 4px; padding: 2px 6px; color: var(--text3);
 }
 .frow { display: none; align-items: center; gap: 10px; }
 .frow.show { display: flex; }
 .f-ico {
   width: 38px; height: 38px;
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text3);
-  flex-shrink: 0;
+  background: var(--surface); border: 1px solid var(--border2); border-radius: 9px;
+  display: flex; align-items: center; justify-content: center; color: var(--text3); flex-shrink: 0;
 }
 .f-meta { flex: 1; min-width: 0; }
 .f-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
@@ -193,33 +170,18 @@ body.lang-ar .back-btn svg { transform: scaleX(-1); }
 .fk-a { color: var(--green); background: var(--green-dim); border: 1px solid var(--green-br); }
 .f-rm {
   display: flex; align-items: center; gap: 4px;
-  background: none;
-  border: 1px solid var(--border2);
-  border-radius: 6px;
-  color: var(--text3);
-  font-size: 11px;
-  font-family: inherit;
-  cursor: pointer;
-  padding: 4px 10px;
-  transition: all .15s;
-  flex-shrink: 0;
+  background: none; border: 1px solid var(--border2); border-radius: 6px;
+  color: var(--text3); font-size: 11px; font-family: inherit;
+  cursor: pointer; padding: 4px 10px; transition: all .15s; flex-shrink: 0;
 }
 .f-rm:hover { border-color: var(--red); color: var(--red); }
 #fi { display: none; }
 
 /* Settings panel */
-.panel {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg2);
-  overflow: hidden;
-}
+.panel { border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg2); overflow: hidden; }
 .p-hd {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 14px;
-  cursor: pointer;
-  user-select: none;
-  transition: background .15s;
+  padding: 12px 14px; cursor: pointer; user-select: none; transition: background .15s;
 }
 .p-hd:hover { background: var(--surface); }
 .p-hd.open { border-bottom: 1px solid var(--border); background: var(--surface); }
@@ -229,30 +191,25 @@ body.lang-ar .back-btn svg { transform: scaleX(-1); }
 .p-chev.open { transform: rotate(180deg); }
 .p-body { padding: 16px 14px; display: none; }
 .p-body.open { display: block; }
-
 .sliders-grid { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
 .sl { display: flex; flex-direction: column; gap: 5px; }
 .sl-row { display: flex; justify-content: space-between; align-items: center; }
 .sl-name { font-size: 11px; font-weight: 600; color: var(--text2); }
 .sl-val {
   font-size: 10px; font-weight: 700;
-  color: var(--blue); background: var(--blue-dim);
-  border: 1px solid var(--blue-br);
+  color: var(--blue); background: var(--blue-dim); border: 1px solid var(--blue-br);
   border-radius: 4px; padding: 1px 7px;
 }
 input[type=range] {
   width: 100%; -webkit-appearance: none;
-  height: 2px; background: var(--border2);
-  border-radius: 99px; outline: none; cursor: pointer;
+  height: 2px; background: var(--border2); border-radius: 99px; outline: none; cursor: pointer;
 }
 input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none; width: 14px; height: 14px;
-  background: var(--blue); border-radius: 50%;
-  transition: transform .1s;
+  background: var(--blue); border-radius: 50%; transition: transform .1s;
 }
 input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.25); }
 .sl-hint { font-size: 10px; color: var(--text3); line-height: 1.5; }
-
 .denoise-row {
   display: flex; align-items: flex-start; justify-content: space-between;
   gap: 12px; padding-top: 14px; border-top: 1px solid var(--border);
@@ -264,15 +221,21 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.25); }
 .tog input:checked + .tog-t { background: var(--blue); }
 .tog input:checked + .tog-t::after { transform: translateX(16px); }
 
-/* Info strip */
-.info-strip {
+/* Output folder strip */
+.folder-strip {
   display: flex; align-items: center; gap: 8px;
   padding: 10px 13px;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  font-size: 11px;
-  color: var(--text3);
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+  font-size: 11px; color: var(--text3);
+  cursor: pointer; transition: border-color .15s;
+}
+.folder-strip:hover { border-color: var(--border2); }
+.folder-path { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text2); }
+.folder-change {
+  font-size: 10px; font-weight: 700; color: var(--blue);
+  padding: 2px 8px; border-radius: 4px;
+  background: var(--blue-dim); border: 1px solid var(--blue-br);
+  white-space: nowrap; flex-shrink: 0; cursor: pointer;
 }
 
 /* Error */
@@ -290,8 +253,7 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.25); }
   background: var(--blue); color: #fff;
   border: none; border-radius: 12px;
   font-family: inherit; font-size: 14px; font-weight: 700;
-  cursor: pointer;
-  transition: opacity .15s, transform .1s;
+  cursor: pointer; transition: opacity .15s, transform .1s;
   display: flex; align-items: center; justify-content: center; gap: 8px;
   position: relative; overflow: hidden;
 }
@@ -299,8 +261,7 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.25); }
 .go:active:not(:disabled) { transform: translateY(0); }
 .go:disabled { background: var(--surface); color: var(--text3); cursor: not-allowed; transform: none; }
 .go.loading::after {
-  content: '';
-  position: absolute; inset: 0;
+  content: ''; position: absolute; inset: 0;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);
   animation: shim 1.2s infinite;
 }
@@ -308,34 +269,23 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.25); }
 
 /* ── SCREEN 2: PROCESSING ── */
 #s-proc {
-  flex: 1;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 32px 24px;
-  gap: 32px;
+  flex: 1; flex-direction: column; align-items: center; justify-content: center;
+  padding: 32px 24px; gap: 32px;
 }
-
-
 .proc-info { text-align: center; }
-.proc-pct  { font-size: 52px; font-weight: 800; letter-spacing: -2px; color: var(--text); line-height: 1; margin-bottom: 10px; }
+.proc-pct { font-size: 52px; font-weight: 800; letter-spacing: -2px; color: var(--text); line-height: 1; margin-bottom: 10px; }
 .proc-pct span { font-size: 18px; font-weight: 500; color: var(--text3); }
-.proc-msg  { font-size: 14px; color: var(--text2); min-height: 22px; }
+.proc-msg { font-size: 14px; color: var(--text2); min-height: 22px; }
 .proc-file { font-size: 11px; color: var(--text3); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px; }
-
 .proc-bar-wrap { width: 100%; max-width: 320px; }
 .proc-track { height: 3px; background: var(--border2); border-radius: 99px; overflow: hidden; }
-.proc-fill  {
+.proc-fill {
   height: 100%; border-radius: 99px; width: 0%;
-  background: var(--blue);
-  transition: width .4s ease;
-  position: relative;
-  overflow: hidden;
+  background: var(--blue); transition: width .4s ease;
+  position: relative; overflow: hidden;
 }
 .proc-fill::after {
-  content: '';
-  position: absolute;
-  inset: 0;
+  content: ''; position: absolute; inset: 0;
   background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.35) 50%, transparent 100%);
   animation: shimbar 1.4s ease-in-out infinite;
 }
@@ -343,43 +293,28 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.25); }
 
 /* ── SCREEN 3: RESULT ── */
 #s-result {
-  max-width: 680px;
-  width: 100%;
+  max-width: 680px; width: 100%;
   margin: 0 auto;
-  padding: 40px 24px 40px;
+  padding: 40px 24px;
   gap: 14px;
-  position: relative;
-  overflow: hidden;
+  position: relative; overflow: hidden;
 }
-
-/* Celebration confetti canvas */
 #confetti-canvas {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  pointer-events: none;
-  z-index: 200;
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 200;
 }
 
 /* Done banner */
 .done-banner {
-  display: flex;
-  align-items: center;
-  gap: 14px;
+  display: flex; align-items: center; gap: 14px;
   padding: 18px;
-  background: var(--green-dim);
-  border: 1px solid var(--green-br);
-  border-radius: var(--radius);
+  background: var(--green-dim); border: 1px solid var(--green-br); border-radius: var(--radius);
   animation: slide-up .4s ease;
 }
 @keyframes slide-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 .done-check {
-  width: 42px; height: 42px;
-  background: var(--green);
-  border-radius: 11px;
-  display: flex; align-items: center; justify-content: center;
-  color: #fff;
-  flex-shrink: 0;
+  width: 42px; height: 42px; background: var(--green); border-radius: 11px;
+  display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0;
   animation: pop .4s cubic-bezier(.34,1.56,.64,1);
 }
 @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
@@ -392,26 +327,16 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.25); }
   background: var(--green); color: #fff;
   border: none; border-radius: 8px;
   font-family: inherit; font-size: 12px; font-weight: 700;
-  cursor: pointer;
-  transition: opacity .15s, transform .1s;
-  flex-shrink: 0;
-  white-space: nowrap;
+  cursor: pointer; transition: opacity .15s, transform .1s; flex-shrink: 0; white-space: nowrap;
 }
 .dl-btn:hover { opacity: .88; transform: translateY(-1px); }
 
 /* Stats grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 @media (max-width: 480px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
 .stat-box {
-  padding: 14px 8px;
-  text-align: center;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 11px;
+  padding: 14px 8px; text-align: center;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 11px;
   animation: slide-up .4s ease backwards;
 }
 .stat-box:nth-child(1) { animation-delay: .05s; }
@@ -427,16 +352,12 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.25); }
 
 /* Duration card */
 .dur-card {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  animation: slide-up .4s .25s ease backwards;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
+  overflow: hidden; animation: slide-up .4s .25s ease backwards;
 }
 .dur-hd {
   display: flex; align-items: center; gap: 6px;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
   font-size: 11px; font-weight: 700; color: var(--text3);
 }
 .dur-body { padding: 16px 14px; }
@@ -449,62 +370,74 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.25); }
 .bar-t { height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; }
 .bar-f { height: 100%; background: var(--blue); border-radius: 99px; width: 0%; transition: width 1s cubic-bezier(.22,1,.36,1); }
 
-/* Saved to folder strip */
+/* ── PREVIEW CARD ── */
+.preview-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
+  overflow: hidden; animation: slide-up .4s .3s ease backwards;
+}
+.preview-hd {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+  font-size: 11px; font-weight: 700; color: var(--text3);
+}
+.preview-body { padding: 14px; }
+.preview-video {
+  width: 100%; border-radius: 8px;
+  background: #000; display: block;
+  max-height: 300px; object-fit: contain;
+}
+.preview-audio {
+  width: 100%; border-radius: 8px;
+  accent-color: var(--blue);
+}
+.preview-filename {
+  font-size: 10px; color: var(--text3); margin-top: 8px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Save strip */
 .save-strip {
   display: flex; align-items: center; gap: 9px;
   padding: 11px 14px;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  font-size: 11px;
-  color: var(--text3);
-  animation: slide-up .4s .3s ease backwards;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+  font-size: 11px; color: var(--text3);
+  animation: slide-up .4s .35s ease backwards;
 }
 .save-strip strong { color: var(--text2); font-weight: 600; }
 
-/* ── TOAST ── */
+/* Toast */
 .toast {
-  position: fixed;
-  top: 68px; right: 20px;
-  z-index: 300;
+  position: fixed; top: 68px; right: 20px; z-index: 300;
   display: flex; align-items: center; gap: 10px;
   padding: 11px 16px;
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: 11px;
+  background: var(--surface); border: 1px solid var(--border2); border-radius: 11px;
   font-size: 12px; color: var(--text2);
   box-shadow: 0 12px 40px rgba(0,0,0,.5);
-  transform: translateY(-20px) translateX(10px);
-  opacity: 0;
+  transform: translateY(-20px) translateX(10px); opacity: 0;
   transition: transform .3s cubic-bezier(.22,1,.36,1), opacity .3s;
-  pointer-events: none;
-  max-width: 320px;
+  pointer-events: none; max-width: 320px;
 }
 .toast.show { transform: translateY(0) translateX(0); opacity: 1; pointer-events: auto; }
 body.lang-ar .toast { right: auto; left: 20px; }
 .toast-icon {
-  width: 22px; height: 22px;
-  border-radius: 6px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
+  width: 22px; height: 22px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .toast-icon.green { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-br); }
 .toast-icon.blue  { background: var(--blue-dim);  color: var(--blue);  border: 1px solid var(--blue-br); }
 .toast-icon.red   { background: var(--red-dim);   color: var(--red);   border: 1px solid var(--red-br); }
 .toast-msg { font-weight: 500; }
-
-/* Utility */
 .spacer { flex: 1; }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
   <div class="nav-left">
     <a class="nav-logo" href="#">
       <img src="Silkut.png" alt="Silkut">
-      <span>Silkut</span>
+      <span class="nav-logo-en">Silkut</span>
+      <span class="nav-logo-ar">سيلكت</span>
     </a>
     <div class="nav-sep"></div>
     <span class="nav-screen-label" id="screenLabel" data-en="Home" data-ar="الرئيسية">Home</span>
@@ -523,13 +456,11 @@ body.lang-ar .toast { right: auto; left: 20px; }
 
 <!-- ── SCREEN 1: HOME ── -->
 <div class="screen active" id="s-home">
-
   <div class="home-hero">
     <h1 data-en="Remove Silence" data-ar="احذف الصمت">Remove Silence</h1>
     <p data-en="Drop your video or audio — Silkut cuts the dead air automatically." data-ar="أضف ملفك — سيلكت يحذف الصمت تلقائياً.">Drop your video or audio — Silkut cuts the dead air automatically.</p>
   </div>
 
-  <!-- DROP ZONE -->
   <div class="drop" id="dz" onclick="document.getElementById('fi').click()">
     <div class="drop-empty" id="dze">
       <div class="drop-ico-wrap">
@@ -568,10 +499,7 @@ body.lang-ar .toast { right: auto; left: 20px; }
   <div class="panel">
     <div class="p-hd" id="phd" onclick="togglePanel()">
       <span class="p-title">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
-        </svg>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
         <span data-en="Settings" data-ar="الإعدادات">Settings</span>
       </span>
       <svg class="p-chev" id="pchev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
@@ -616,10 +544,11 @@ body.lang-ar .toast { right: auto; left: 20px; }
     </div>
   </div>
 
-  <!-- INFO STRIP -->
-  <div class="info-strip">
+  <!-- OUTPUT FOLDER -->
+  <div class="folder-strip" id="folderStrip">
     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-    <span data-en="Output saved to <strong style='color:var(--text2)'>Desktop\Silkut</strong> — created automatically." data-ar="يُحفظ الملف الناتج في <strong style='color:var(--text2)'>Desktop\Silkut</strong> تلقائياً.">Output saved to <strong style="color:var(--text2)">Desktop\Silkut</strong> — created automatically.</span>
+    <span class="folder-path" id="folderPath">Loading…</span>
+    <span class="folder-change" onclick="pickFolder(event)" data-en="Change" data-ar="تغيير">Change</span>
   </div>
 
   <!-- ERROR -->
@@ -628,33 +557,26 @@ body.lang-ar .toast { right: auto; left: 20px; }
     <span id="emsg"></span>
   </div>
 
-  <!-- GO BUTTON -->
   <button class="go" id="gobtn" disabled onclick="startProcess()">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
     <span data-en="Remove Silence" data-ar="احذف الصمت">Remove Silence</span>
   </button>
-
-</div><!-- end s-home -->
+</div>
 
 <!-- ── SCREEN 2: PROCESSING ── -->
 <div class="screen" id="s-proc">
-
   <div class="proc-info">
     <div class="proc-pct"><span id="ppct">0</span><span>%</span></div>
     <div class="proc-msg" id="pstep">Uploading…</div>
     <div class="proc-file" id="proc-fname"></div>
   </div>
-
   <div class="proc-bar-wrap">
     <div class="proc-track"><div class="proc-fill" id="pfill"></div></div>
   </div>
-
-</div><!-- end s-proc -->
+</div>
 
 <!-- ── SCREEN 3: RESULT ── -->
 <div class="screen" id="s-result">
-
-  <!-- Done banner -->
   <div class="done-banner">
     <div class="done-check">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><polyline points="20 6 9 17 4 12"/></svg>
@@ -669,7 +591,6 @@ body.lang-ar .toast { right: auto; left: 20px; }
     </button>
   </div>
 
-  <!-- Stats -->
   <div class="stats-grid">
     <div class="stat-box"><div class="stat-val c-blue" id="st1">—</div><div class="stat-lbl" data-en="Silence Removed" data-ar="صمت محذوف">Silence Removed</div></div>
     <div class="stat-box"><div class="stat-val c-green" id="st2">—</div><div class="stat-lbl" data-en="File Shortened By" data-ar="اختصار الملف">File Shortened By</div></div>
@@ -677,7 +598,6 @@ body.lang-ar .toast { right: auto; left: 20px; }
     <div class="stat-box"><div class="stat-val c-text" id="st4">—</div><div class="stat-lbl" data-en="Processing Time" data-ar="وقت المعالجة">Processing Time</div></div>
   </div>
 
-  <!-- Duration card -->
   <div class="dur-card">
     <div class="dur-hd">
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
@@ -702,46 +622,82 @@ body.lang-ar .toast { right: auto; left: 20px; }
     </div>
   </div>
 
-  <!-- Save strip -->
-  <div class="save-strip">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-    <span data-en="Saved to <strong>Desktop\Silkut</strong> — created automatically." data-ar="تم الحفظ في <strong>Desktop\Silkut</strong> تلقائياً.">Saved to <strong>Desktop\Silkut</strong> — created automatically.</span>
+  <!-- PREVIEW -->
+  <div class="preview-card" id="previewCard" style="display:none">
+    <div class="preview-hd">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      <span data-en="Preview" data-ar="معاينة">Preview</span>
+    </div>
+    <div class="preview-body">
+      <video id="previewVideo" class="preview-video" controls style="display:none"></video>
+      <audio id="previewAudio" class="preview-audio" controls style="display:none"></audio>
+      <div class="preview-filename" id="previewFilename"></div>
+    </div>
   </div>
 
-  <!-- Back to Home -->
+  <div class="save-strip">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+    <span id="saveStripText">Saved to <strong>Desktop\Silkut</strong> — created automatically.</span>
+  </div>
+
   <button class="go" onclick="goHome()" style="background:var(--surface);color:var(--text2);border:1px solid var(--border2);">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
     <span data-en="Back to Home" data-ar="العودة للرئيسية">Back to Home</span>
   </button>
+</div>
 
-</div><!-- end s-result -->
-
-<!-- TOAST -->
 <div class="toast" id="toast">
   <div class="toast-icon green" id="toastIcon">
     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
   </div>
   <span class="toast-msg" id="toastMsg"></span>
 </div>
-
-<!-- Confetti canvas -->
 <canvas id="confetti-canvas"></canvas>
 
 <script>
-
-
-
-// ── STATE ──────────────────────────────────────────────────────────────
 var AEXTS = ['mp3','wav','aac','flac','ogg','m4a'];
 var VEXTS = ['mp4','mkv','mov','avi','webm'];
-var file = null, outUrl = null, isVideo = false, currentLang = 'en';
+var file = null, outUrl = null, streamUrl = null, isVideo = false, currentLang = 'en';
+var currentOutputFolder = '';
 
-// ── LANG ───────────────────────────────────────────────────────────────
+// ── INIT ────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', function() {
+  fetch('/settings')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      currentOutputFolder = d.output_folder || '';
+      document.getElementById('folderPath').textContent = currentOutputFolder;
+    })
+    .catch(function() {
+      document.getElementById('folderPath').textContent = 'Desktop\\Silkut';
+    });
+});
+
+// ── FOLDER PICKER ───────────────────────────────────────────────────────
+function pickFolder(e) {
+  e.stopPropagation();
+  fetch('/settings/folder', { method: 'POST' })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.ok) {
+        currentOutputFolder = d.folder;
+        document.getElementById('folderPath').textContent = d.folder;
+        showToast(
+          currentLang === 'ar' ? 'تم تغيير مجلد الحفظ' : 'Output folder updated',
+          'green'
+        );
+      }
+    })
+    .catch(function() {
+      showToast(currentLang === 'ar' ? 'تعذّر فتح منتقي المجلد' : 'Could not open folder picker', 'red');
+    });
+}
+
+// ── LANG ────────────────────────────────────────────────────────────────
 function toggleLang() {
   currentLang = currentLang === 'en' ? 'ar' : 'en';
   applyLang();
 }
-
 function applyLang() {
   var isAr = currentLang === 'ar';
   document.documentElement.lang = currentLang;
@@ -749,35 +705,35 @@ function applyLang() {
   document.body.classList.toggle('lang-ar', isAr);
   document.getElementById('lo-en').classList.toggle('active', !isAr);
   document.getElementById('lo-ar').classList.toggle('active', isAr);
-
-  // Translate all [data-en] / [data-ar] elements
   document.querySelectorAll('[data-en]').forEach(function(el) {
     var txt = el.getAttribute(isAr ? 'data-ar' : 'data-en');
     if (txt !== null) el.innerHTML = txt;
   });
+  updateSaveStrip();
 }
 
-// ── SCREENS ────────────────────────────────────────────────────────────
+// ── SCREENS ─────────────────────────────────────────────────────────────
 var SCREEN_LABELS = { home: { en: 'Home', ar: 'الرئيسية' }, proc: { en: 'Processing', ar: 'جارٍ المعالجة' }, result: { en: 'Result', ar: 'النتيجة' } };
-
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
   document.getElementById('s-' + id).classList.add('active');
-  var label = SCREEN_LABELS[id][currentLang];
-  document.getElementById('screenLabel').textContent = label;
+  document.getElementById('screenLabel').textContent = SCREEN_LABELS[id][currentLang];
   document.getElementById('backBtn').classList.toggle('visible', id !== 'home');
 }
-
 function goHome() {
   showScreen('home');
-  // Reset result state
-  outUrl = null;
+  outUrl = null; streamUrl = null;
   document.getElementById('pfill').style.width = '0%';
   document.getElementById('ppct').textContent = '0';
   hideErr();
+  // Stop preview
+  var v = document.getElementById('previewVideo');
+  var a = document.getElementById('previewAudio');
+  v.pause(); v.src = '';
+  a.pause(); a.src = '';
 }
 
-// ── DROP ZONE ──────────────────────────────────────────────────────────
+// ── DROP ZONE ────────────────────────────────────────────────────────────
 var dz = document.getElementById('dz');
 var fi = document.getElementById('fi');
 dz.addEventListener('dragover', function(e) { e.preventDefault(); dz.classList.add('over'); });
@@ -788,11 +744,9 @@ fi.addEventListener('change', function(e) { if (e.target.files[0]) loadFile(e.ta
 function loadFile(f) {
   var ext = f.name.split('.').pop().toLowerCase();
   isVideo = VEXTS.indexOf(ext) > -1;
-  var isA  = AEXTS.indexOf(ext) > -1;
+  var isA = AEXTS.indexOf(ext) > -1;
   if (!isVideo && !isA) {
-    showErr(currentLang === 'ar'
-      ? 'هذا النوع غير مدعوم. استخدم MP3، WAV، FLAC، AAC، MP4، MKV أو MOV.'
-      : 'This file format is not supported. Use MP3, WAV, FLAC, AAC, MP4, MKV or MOV.');
+    showErr(currentLang === 'ar' ? 'هذا النوع غير مدعوم.' : 'This file format is not supported.');
     return;
   }
   hideErr();
@@ -830,199 +784,143 @@ function togglePanel() {
   document.getElementById('pchev').classList.toggle('open');
 }
 
-// ── PROCESS ────────────────────────────────────────────────────────────
+// ── PROCESS ──────────────────────────────────────────────────────────────
 function startProcess() {
   if (!file) return;
-  var btn  = document.getElementById('gobtn');
-  var mb   = file.size / 1048576;
+  var btn = document.getElementById('gobtn');
+  var mb = file.size / 1048576;
   var isLarge = mb > 200 || (isVideo && mb > 100);
-
-  btn.disabled = true;
-  btn.classList.add('loading');
-  hideErr();
-
-  // Show processing screen
+  btn.disabled = true; btn.classList.add('loading'); hideErr();
   document.getElementById('proc-fname').textContent = file.name;
   showScreen('proc');
-
-  if (isLarge) showToast(
-    currentLang === 'ar' ? 'ملف كبير — قد يستغرق بعض الوقت ☕' : 'Large file detected — this may take a while ☕',
-    'blue'
-  );
+  if (isLarge) showToast(currentLang === 'ar' ? 'ملف كبير — قد يستغرق بعض الوقت ☕' : 'Large file detected — this may take a while ☕', 'blue');
 
   var fd = new FormData();
   fd.append('file', file);
-  fd.append('threshold',   document.getElementById('s1').value);
+  fd.append('threshold', document.getElementById('s1').value);
   fd.append('min_silence', document.getElementById('s2').value);
-  fd.append('padding',     document.getElementById('s3').value);
-  fd.append('denoise',     document.getElementById('dtog').checked ? '1' : '0');
+  fd.append('padding', document.getElementById('s3').value);
+  fd.append('denoise', document.getElementById('dtog').checked ? '1' : '0');
 
-  // Phase tracking
-  var progress  = 0;
-  var uploaded  = false;
-  var procTimer = null;
-  var msgTimer  = null;
-  var msgIndex  = 0;
-
-  var procMsgsEn = isVideo
-    ? ['Cutting…', 'Still cutting…', 'Almost there…', 'Finishing up…', 'Done soon…']
-    : ['Cutting…', 'Still cutting…', 'Almost there…', 'Finishing up…', 'Done soon…'];
-  var procMsgsAr = isVideo
-    ? ['جارٍ القطع…', 'لا يزال يقطع…', 'يكاد ينتهي…', 'إنهاء…', 'بعد قليل…']
-    : ['جارٍ القطع…', 'لا يزال يقطع…', 'يكاد ينتهي…', 'إنهاء…', 'بعد قليل…'];
-
-  function getMsg(i) {
-    return currentLang === 'ar' ? procMsgsAr[i] : procMsgsEn[i];
-  }
+  var progress = 0, uploaded = false, procTimer = null, msgTimer = null, msgIndex = 0;
+  var msgsEn = ['Cutting…','Still cutting…','Almost there…','Finishing up…','Done soon…'];
+  var msgsAr = ['جارٍ القطع…','لا يزال يقطع…','يكاد ينتهي…','إنهاء…','بعد قليل…'];
+  function getMsg(i) { return currentLang === 'ar' ? msgsAr[i] : msgsEn[i]; }
 
   function startProcPhase() {
-    uploaded = true;
-    msgIndex = 0;
-    setP(32, getMsg(0));
-    msgTimer = setInterval(function() {
-      msgIndex = Math.min(msgIndex + 1, procMsgsEn.length - 1);
-      if (progress < 95) setP(progress, getMsg(msgIndex));
-    }, isVideo ? 4000 : 2500);
-    procTimer = setInterval(function() {
-      if (progress >= 95) { clearInterval(procTimer); return; }
-      progress = Math.min(95, progress + (isVideo ? 0.4 : 1.2));
-      setP(progress, getMsg(msgIndex));
-    }, 300);
+    uploaded = true; msgIndex = 0; setP(32, getMsg(0));
+    msgTimer = setInterval(function() { msgIndex = Math.min(msgIndex+1, msgsEn.length-1); if (progress < 95) setP(progress, getMsg(msgIndex)); }, isVideo ? 4000 : 2500);
+    procTimer = setInterval(function() { if (progress >= 95) { clearInterval(procTimer); return; } progress = Math.min(95, progress + (isVideo ? 0.4 : 1.2)); setP(progress, getMsg(msgIndex)); }, 300);
   }
 
   if (Notification.permission === 'default') Notification.requestPermission();
 
   var xhr = new XMLHttpRequest();
   xhr.open('POST', '/upload');
-
   xhr.upload.onprogress = function(e) {
     if (uploaded) return;
     if (e.lengthComputable) {
       var pct = Math.min(30, (e.loaded / e.total) * 30);
       progress = pct;
-      var uploading = currentLang === 'ar' ? 'جارٍ الرفع… ' : 'Uploading… ';
-      setP(pct, uploading + Math.round(e.loaded / e.total * 100) + '%');
-      if (e.loaded >= e.total) { setP(32, getMsg(0)); startProcPhase(); }
+      setP(pct, (currentLang === 'ar' ? 'جارٍ الرفع… ' : 'Uploading… ') + Math.round(e.loaded / e.total * 100) + '%');
+      if (e.loaded >= e.total) startProcPhase();
     }
   };
-
-  xhr.upload.onload = function() {
-    if (!uploaded) startProcPhase();
-  };
-
+  xhr.upload.onload = function() { if (!uploaded) startProcPhase(); };
   xhr.onload = function() {
-    clearInterval(procTimer);
-    clearInterval(msgTimer);
+    clearInterval(procTimer); clearInterval(msgTimer);
     setP(100, currentLang === 'ar' ? 'تم ✓' : 'Done ✓');
     btn.classList.remove('loading');
-
     try {
       var res = JSON.parse(xhr.responseText);
-      if (res.error) {
-        btn.disabled = false;
-        showScreen('home');
-        showErr(res.error);
-        return;
-      }
-
+      if (res.error) { btn.disabled = false; showScreen('home'); showErr(res.error); return; }
       outUrl = res.download_url;
-
-      var delay = isLarge ? 1200 : 600;
-      setTimeout(function() {
-        showResultScreen(res);
-        btn.disabled = false;
-        if (Notification.permission === 'granted') {
-          new Notification('Silkut', {
-            body: (currentLang === 'ar'
-              ? 'تم — حُذف ' + res.removed_duration + ' (' + res.saved_percent + ')'
-              : 'Done — ' + res.removed_duration + ' removed (' + res.saved_percent + ')'),
-            icon: 'Silkut.png'
-          });
-        }
-      }, delay);
-
+      streamUrl = res.stream_url || res.download_url;
+      setTimeout(function() { showResultScreen(res); btn.disabled = false; }, isLarge ? 1200 : 600);
     } catch(ex) {
-      btn.disabled = false;
-      showScreen('home');
+      btn.disabled = false; showScreen('home');
       showErr(currentLang === 'ar' ? 'حدث خطأ. حاول مرة أخرى.' : 'Something went wrong. Please try again.');
     }
   };
-
   xhr.onerror = function() {
-    clearInterval(procTimer);
-    clearInterval(msgTimer);
-    btn.disabled = false;
-    btn.classList.remove('loading');
-    showScreen('home');
-    showErr(currentLang === 'ar' ? 'فشل الاتصال. حاول مرة أخرى.' : 'Connection failed. Please try again.');
+    clearInterval(procTimer); clearInterval(msgTimer);
+    btn.disabled = false; btn.classList.remove('loading'); showScreen('home');
+    showErr(currentLang === 'ar' ? 'فشل الاتصال.' : 'Connection failed. Please try again.');
   };
-
   setP(0, currentLang === 'ar' ? 'جارٍ الرفع…' : 'Uploading…');
   xhr.send(fd);
 }
 
-// ── RESULT ─────────────────────────────────────────────────────────────
+// ── RESULT ───────────────────────────────────────────────────────────────
 function showResultScreen(res) {
-  var ft = res.file_type === 'video'
-    ? (currentLang === 'ar' ? 'فيديو' : 'Video')
-    : (currentLang === 'ar' ? 'صوت' : 'Audio');
+  var ft = res.file_type === 'video' ? (currentLang === 'ar' ? 'فيديو' : 'Video') : (currentLang === 'ar' ? 'صوت' : 'Audio');
   document.getElementById('rmeta').textContent = ft + ' · ' + (res.original_duration||'—') + ' → ' + (res.output_duration||'—');
   document.getElementById('st1').textContent = res.removed_duration || '—';
   document.getElementById('st2').textContent = res.saved_percent || '—';
   document.getElementById('st3').textContent = res.segments_removed != null ? res.segments_removed : '—';
   document.getElementById('st4').textContent = res.process_time || '—';
   document.getElementById('dorig').textContent = res.original_duration || '—';
-  document.getElementById('dout').textContent  = res.output_duration || '—';
+  document.getElementById('dout').textContent = res.output_duration || '—';
   var pct = parseFloat(res.saved_percent) || 0;
   document.getElementById('bpct').textContent = res.saved_percent || '0%';
   setTimeout(function() { document.getElementById('bfill').style.width = Math.min(pct, 100) + '%'; }, 200);
 
+  // Update save strip
+  if (res.output_folder) currentOutputFolder = res.output_folder;
+  updateSaveStrip();
+
+  // Preview
+  var outName = (streamUrl || outUrl || '').split('/').pop();
+  var previewUrl = 'http://127.0.0.1:8080/stream/' + outName;
+  var card = document.getElementById('previewCard');
+  var pv = document.getElementById('previewVideo');
+  var pa = document.getElementById('previewAudio');
+  document.getElementById('previewFilename').textContent = outName;
+  if (res.file_type === 'video') {
+    pv.src = previewUrl; pv.style.display = 'block'; pa.style.display = 'none';
+  } else {
+    pa.src = previewUrl; pa.style.display = 'block'; pv.style.display = 'none';
+  }
+  card.style.display = 'block';
+
   showScreen('result');
-  applyLang(); // re-apply translations to result screen elements
-
-  // Trigger confetti
+  applyLang();
   launchConfetti();
-
-  // Success toast
-  showToast(
-    currentLang === 'ar' ? 'تم! الصمت محذوف بنجاح.' : 'Done! Silence removed successfully.',
-    'green'
-  );
+  showToast(currentLang === 'ar' ? 'تم! الصمت محذوف بنجاح.' : 'Done! Silence removed successfully.', 'green');
 }
 
-// ── DOWNLOAD ───────────────────────────────────────────────────────────
+function updateSaveStrip() {
+  var folder = currentOutputFolder || 'Desktop\\Silkut';
+  var el = document.getElementById('saveStripText');
+  if (currentLang === 'ar') {
+    el.innerHTML = 'تم الحفظ في <strong>' + folder + '</strong> تلقائياً.';
+  } else {
+    el.innerHTML = 'Saved to <strong>' + folder + '</strong> — created automatically.';
+  }
+}
+
+// ── DOWNLOAD ─────────────────────────────────────────────────────────────
 function doDownload() {
   if (!outUrl) return;
-  // Filename is already xxxx-silkut.ext from server, just use it
   var outName = outUrl.split('/').pop();
   var fullUrl = 'http://127.0.0.1:8080' + outUrl;
-  fetch(fullUrl)
-    .then(function(r) { return r.blob(); })
-    .then(function(blob) {
-      var burl = window.URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = burl; a.download = outName;
-      document.body.appendChild(a); a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(burl);
-      showToast(
-        currentLang === 'ar' ? 'تم التحميل — محفوظ في Desktop\\Silkut' : 'Saved to Desktop\\Silkut automatically',
-        'blue'
-      );
-    })
-    .catch(function() {
-      var a = document.createElement('a');
-      a.href = fullUrl; a.download = outName;
-      document.body.appendChild(a); a.click();
-      document.body.removeChild(a);
-      showToast(
-        currentLang === 'ar' ? 'جارٍ التحميل…' : 'Downloading…',
-        'blue'
-      );
-    });
+  fetch(fullUrl).then(function(r) { return r.blob(); }).then(function(blob) {
+    var burl = window.URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = burl; a.download = outName;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(burl);
+    showToast(currentLang === 'ar' ? 'تم التحميل' : 'Downloaded successfully', 'blue');
+  }).catch(function() {
+    var a = document.createElement('a');
+    a.href = fullUrl; a.download = outName;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+  });
 }
 
-// ── UI HELPERS ─────────────────────────────────────────────────────────
+// ── HELPERS ──────────────────────────────────────────────────────────────
 function setP(v, s) {
   var vv = Math.min(100, Math.round(v));
   document.getElementById('pfill').style.width = vv + '%';
@@ -1032,15 +930,14 @@ function setP(v, s) {
 
 var _toastTimer = null;
 function showToast(msg, type) {
-  var toast  = document.getElementById('toast');
-  var icon   = document.getElementById('toastIcon');
-  var msgEl  = document.getElementById('toastMsg');
-  msgEl.textContent = msg;
+  var toast = document.getElementById('toast');
+  var icon = document.getElementById('toastIcon');
+  document.getElementById('toastMsg').textContent = msg;
   icon.className = 'toast-icon ' + (type || 'green');
   var icons = {
     green: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>',
-    blue:  '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
-    red:   '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+    blue: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+    red: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
   };
   icon.innerHTML = icons[type] || icons.green;
   toast.classList.add('show');
@@ -1048,56 +945,26 @@ function showToast(msg, type) {
   _toastTimer = setTimeout(function() { toast.classList.remove('show'); }, 3500);
 }
 
-function showErr(m) {
-  document.getElementById('emsg').textContent = m;
-  document.getElementById('err').classList.add('show');
-}
+function showErr(m) { document.getElementById('emsg').textContent = m; document.getElementById('err').classList.add('show'); }
 function hideErr() { document.getElementById('err').classList.remove('show'); }
 function fmtSz(b) { return b < 1048576 ? (b/1024).toFixed(1)+' KB' : (b/1048576).toFixed(1)+' MB'; }
 
-// ── CONFETTI ───────────────────────────────────────────────────────────
+// ── CONFETTI ─────────────────────────────────────────────────────────────
 function launchConfetti() {
   var canvas = document.getElementById('confetti-canvas');
   var ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  var pieces = [];
-  var colors = ['#3b82f6','#22c55e','#fbbf24','#f87171','#a78bfa','#34d399'];
-  var total = 80;
-
-  for (var i = 0; i < total; i++) {
-    pieces.push({
-      x: Math.random() * canvas.width,
-      y: -20 - Math.random() * 200,
-      w: 6 + Math.random() * 8,
-      h: 3 + Math.random() * 4,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      angle: Math.random() * Math.PI * 2,
-      vx: (Math.random() - 0.5) * 3,
-      vy: 2 + Math.random() * 4,
-      va: (Math.random() - 0.5) * 0.2,
-      alpha: 1
-    });
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  var pieces = [], colors = ['#3b82f6','#22c55e','#fbbf24','#f87171','#a78bfa','#34d399'];
+  for (var i = 0; i < 80; i++) {
+    pieces.push({ x: Math.random()*canvas.width, y: -20-Math.random()*200, w: 6+Math.random()*8, h: 3+Math.random()*4, color: colors[Math.floor(Math.random()*colors.length)], angle: Math.random()*Math.PI*2, vx: (Math.random()-.5)*3, vy: 2+Math.random()*4, va: (Math.random()-.5)*.2, alpha: 1 });
   }
-
-  var frame = 0;
-  var maxFrames = 120;
-
+  var frame = 0, maxFrames = 120;
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     pieces.forEach(function(p) {
-      p.x  += p.vx;
-      p.y  += p.vy;
-      p.angle += p.va;
-      p.alpha = Math.max(0, 1 - frame / maxFrames);
-      ctx.save();
-      ctx.globalAlpha = p.alpha;
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.angle);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
-      ctx.restore();
+      p.x += p.vx; p.y += p.vy; p.angle += p.va; p.alpha = Math.max(0, 1-frame/maxFrames);
+      ctx.save(); ctx.globalAlpha = p.alpha; ctx.translate(p.x, p.y); ctx.rotate(p.angle);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h); ctx.restore();
     });
     frame++;
     if (frame < maxFrames) requestAnimationFrame(draw);
