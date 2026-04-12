@@ -22,12 +22,22 @@ BASE     = get_base()
 EXE_DIR  = get_exe_dir()
 FRONTEND = BASE
 UPLOADS  = os.path.join(EXE_DIR, "uploads")
-SETTINGS_PATH = os.path.join(EXE_DIR, "silkut_settings.json")
 
 os.makedirs(UPLOADS, exist_ok=True)
 
 AUDIO_EXTS = {"mp3", "wav", "aac", "flac", "ogg", "m4a"}
 VIDEO_EXTS = {"mp4", "mkv", "mov", "avi", "webm"}
+
+# ── SILKUT FOLDER ────────────────────────────────────────────────────────
+def get_silkut_folder():
+    """Always returns ~/Downloads/Silkut, creating it if needed."""
+    downloads = os.path.join(os.path.expanduser("~"), "Downloads")
+    silkut = os.path.join(downloads, "Silkut")
+    os.makedirs(silkut, exist_ok=True)
+    return silkut
+
+SILKUT_FOLDER = get_silkut_folder()
+SETTINGS_PATH = os.path.join(SILKUT_FOLDER, "silkut_settings.json")
 
 # ── SETTINGS ────────────────────────────────────────────────────────────
 def load_settings():
@@ -39,23 +49,14 @@ def load_settings():
 
 def save_settings(data):
     try:
+        os.makedirs(SILKUT_FOLDER, exist_ok=True)
         with open(SETTINGS_PATH, "w") as f:
             json.dump(data, f)
     except Exception:
         pass
 
 def get_default_output_dir():
-    if sys.platform == "win32":
-        desktop = os.path.join(os.path.expanduser("~"), "Desktop")
-        if not os.path.isdir(desktop):
-            desktop = os.path.join(os.path.expanduser("~"), "OneDrive", "Desktop")
-        if not os.path.isdir(desktop):
-            desktop = os.path.expanduser("~")
-    else:
-        desktop = os.path.join(os.path.expanduser("~"), "Desktop")
-        if not os.path.isdir(desktop):
-            desktop = os.path.expanduser("~")
-    return os.path.join(desktop, "Silkut")
+    return SILKUT_FOLDER
 
 def get_output_dir():
     """Get output dir, always ensure it exists, fallback to default if saved one is gone."""
