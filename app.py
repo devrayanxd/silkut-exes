@@ -22,10 +22,14 @@ BASE     = get_base()
 EXE_DIR  = get_exe_dir()
 FRONTEND = BASE
 UPLOADS  = os.path.join(EXE_DIR, "uploads")
-
-# ── SETTINGS FILE (persists output folder choice) ───────────────────────
 SETTINGS_PATH = os.path.join(EXE_DIR, "silkut_settings.json")
 
+os.makedirs(UPLOADS, exist_ok=True)
+
+AUDIO_EXTS = {"mp3", "wav", "aac", "flac", "ogg", "m4a"}
+VIDEO_EXTS = {"mp4", "mkv", "mov", "avi", "webm"}
+
+# ── SETTINGS ────────────────────────────────────────────────────────────
 def load_settings():
     try:
         with open(SETTINGS_PATH, "r") as f:
@@ -54,19 +58,30 @@ def get_default_output_dir():
     return os.path.join(desktop, "Silkut")
 
 def get_output_dir():
+    """Get output dir, always ensure it exists, fallback to default if saved one is gone."""
     settings = load_settings()
-    folder = settings.get("output_folder", "")
-    if folder and os.path.isdir(folder):
-        return folder
-    return get_default_output_dir()
+    folder = settings.get("output_folder", "").strip()
+    if folder:
+        try:
+            os.makedirs(folder, exist_ok=True)
+            return folder
+        except Exception:
+            pass
+    default = get_default_output_dir()
+    os.makedirs(default, exist_ok=True)
+    return default
 
-os.makedirs(UPLOADS, exist_ok=True)
+# ── FILE REGISTRY — tracks output files by job ID ───────────────────────
+_file_registry = {}  # job_id -> absolute out_path
 
-AUDIO_EXTS = {"mp3", "wav", "aac", "flac", "ogg", "m4a"}
-VIDEO_EXTS = {"mp4", "mkv", "mov", "avi", "webm"}
+def register_file(job_id, path):
+    _file_registry[job_id] = path
 
+def resolve_file(job_id):
+    return _file_registry.get(job_id)
+
+# ── FLASK APP ────────────────────────────────────────────────────────────
 app = Flask(__name__, static_folder=FRONTEND)
-
 
 # ── FRONTEND ────────────────────────────────────────────────────────────
 @app.route("/")
@@ -77,51 +92,37 @@ def index():
 def static_files(filename):
     return send_from_directory(FRONTEND, filename)
 
-
 # ── SETTINGS API ────────────────────────────────────────────────────────
 @app.route("/settings", methods=["GET"])
 def get_settings_api():
-    settings = load_settings()
-    output_folder = settings.get("output_folder", "")
-    if not output_folder or not os.path.isdir(output_folder):
-        output_folder = get_default_output_dir()
-    return jsonify({"output_folder": output_folder})
+    folder = get_output_dir()
+    return jsonify({"output_folder": folder})
 
 @app.route("/settings/folder", methods=["POST"])
 def set_folder():
-    """Open a native folder picker and save the chosen path."""
     try:
         import webview
         windows = webview.windows
         if windows:
             result = windows[0].create_file_dialog(webview.FOLDER_DIALOG)
             if result and len(result) > 0:
-                folder = result[0]
+                folder = result[0].strip()
+                os.makedirs(folder, exist_ok=True)
                 settings = load_settings()
                 settings["output_folder"] = folder
                 save_settings(settings)
-                os.makedirs(folder, exist_ok=True)
                 return jsonify({"ok": True, "folder": folder})
-        return jsonify({"ok": False, "error": "No window"})
+        return jsonify({"ok": False, "error": "No window available"})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)})
 
-@app.route("/settings/folder/manual", methods=["POST"])
-def set_folder_manual():
-    """Set folder from a manually typed path."""
-    data = request.get_json(silent=True) or {}
-    folder = data.get("folder", "").strip()
-    if not folder:
-        return jsonify({"ok": False, "error": "Empty path"})
-    try:
-        os.makedirs(folder, exist_ok=True)
-        settings = load_settings()
-        settings["output_folder"] = folder
-        save_settings(settings)
-        return jsonify({"ok": True, "folder": folder})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)})
-
+@app.route("/settings/folder/reset", methods=["POST"])
+def reset_folder():
+    settings = load_settings()
+    settings.pop("output_folder", None)
+    save_settings(settings)
+    folder = get_output_dir()
+    return jsonify({"ok": True, "folder": folder})
 
 # ── UPLOAD ──────────────────────────────────────────────────────────────
 @app.route("/upload", methods=["POST"])
@@ -130,7 +131,7 @@ def upload():
     if not f:
         return jsonify({"error": "No file received. Please try again."}), 400
 
-    ext   = f.filename.rsplit(".", 1)[-1].lower() if "." in f.filename else ""
+    ext = f.filename.rsplit(".", 1)[-1].lower() if "." in f.filename else ""
     ftype = "video" if ext in VIDEO_EXTS else "audio" if ext in AUDIO_EXTS else None
     if not ftype:
         return jsonify({"error": f"The format .{ext} is not supported."}), 400
@@ -139,14 +140,14 @@ def upload():
     mb = f.tell() / 1048576
     f.seek(0)
 
-    OUTPUTS = get_output_dir()
-    os.makedirs(OUTPUTS, exist_ok=True)
+    # Resolve output dir ONCE per job
+    output_dir = get_output_dir()
 
-    job      = str(uuid.uuid4())[:8]
-    in_path  = os.path.join(UPLOADS, f"{job}.{ext}")
+    job_id   = str(uuid.uuid4())[:8]
+    in_path  = os.path.join(UPLOADS, f"{job_id}.{ext}")
     out_ext  = "mp4" if ftype == "video" else ext
-    out_name = f"{job}-silkut.{out_ext}"
-    out_path = os.path.join(OUTPUTS, out_name)
+    out_name = f"{job_id}-silkut.{out_ext}"
+    out_path = os.path.join(output_dir, out_name)
 
     f.save(in_path)
 
@@ -164,14 +165,18 @@ def upload():
         res = process(in_path, out_path, ext, ftype, thresh, min_sil, padding, denoise)
     except Exception:
         _rm(in_path)
-        return jsonify({"error": "Processing failed. The file may be corrupted or in an unsupported encoding."}), 500
+        return jsonify({"error": "Processing failed. The file may be corrupted or unsupported."}), 500
 
     _rm(in_path)
     elapsed = round(time.time() - t0, 1)
 
+    # Register exact path — download/stream use this, never recalculate
+    register_file(job_id, out_path)
+
     return jsonify({
-        "download_url":      f"/download/{out_name}",
-        "stream_url":        f"/stream/{out_name}",
+        "job_id":            job_id,
+        "download_url":      f"/download/{job_id}",
+        "stream_url":        f"/stream/{job_id}",
         "file_type":         ftype,
         "original_duration": fmt_sec(res["orig"]),
         "output_duration":   fmt_sec(res["out"]),
@@ -181,36 +186,33 @@ def upload():
         "process_time":      f"{elapsed}s",
         "file_size_mb":      round(mb, 1),
         "denoise_used":      denoise,
-        "output_path":       out_path,
-        "output_folder":     OUTPUTS,
+        "output_folder":     output_dir,
+        "out_name":          out_name,
     })
 
-
-# ── DOWNLOAD / STREAM ───────────────────────────────────────────────────
-@app.route("/download/<n>")
-def download(n):
-    if ".." in n or "/" in n or "\\" in n:
-        return "bad request", 400
-    OUTPUTS = get_output_dir()
-    path = os.path.join(OUTPUTS, n)
+# ── DOWNLOAD ────────────────────────────────────────────────────────────
+@app.route("/download/<job_id>")
+def download(job_id):
+    path = resolve_file(job_id)
+    if not path:
+        return jsonify({"error": "File not found. It may have been moved or deleted."}), 404
     if not os.path.exists(path):
-        return jsonify({"error": "File not found"}), 404
-    return send_file(path, as_attachment=True, download_name=n)
+        return jsonify({"error": "Output file was not found on disk."}), 404
+    return send_file(path, as_attachment=True, download_name=os.path.basename(path))
 
-@app.route("/stream/<n>", methods=["GET", "HEAD"])
-def stream(n):
-    if ".." in n or "/" in n or "\\" in n:
-        return "bad request", 400
-    OUTPUTS = get_output_dir()
-    path = os.path.join(OUTPUTS, n)
+# ── STREAM ──────────────────────────────────────────────────────────────
+@app.route("/stream/<job_id>", methods=["GET", "HEAD"])
+def stream(job_id):
+    path = resolve_file(job_id)
+    if not path:
+        return jsonify({"error": "File not found."}), 404
     if not os.path.exists(path):
-        return jsonify({"error": "File not found"}), 404
+        return jsonify({"error": "Output file was not found on disk."}), 404
     if request.method == "HEAD":
         return "", 200
     return send_file(path, as_attachment=False)
 
-
-# ── CORE PROCESSING ─────────────────────────────────────────────────────
+# ── CORE PROCESSING ──────────────────────────────────────────────────────
 def process(in_path, out_path, ext, ftype, thresh, min_sil, padding, denoise):
     orig     = get_dur(in_path)
     silences = detect_silences(in_path, thresh, min_sil, orig, denoise)
@@ -236,7 +238,6 @@ def process(in_path, out_path, ext, ftype, thresh, min_sil, padding, denoise):
 
     return {"orig": orig, "out": out, "removed": removed, "pct": pct, "n": len(silences)}
 
-
 def detect_silences(in_path, thresh, min_sil, total, denoise=False):
     af = (
         f"highpass=f=150,afftdn=nf=-20,silencedetect=noise={thresh}dB:d={min_sil}"
@@ -256,7 +257,6 @@ def detect_silences(in_path, thresh, min_sil, total, denoise=False):
         if e - s >= min_sil * 0.5:
             silences.append((s, e))
     return silences
-
 
 def build_keep(silences, total, padding):
     remove = []
@@ -285,7 +285,6 @@ def build_keep(silences, total, padding):
         keep.append((max(0.0, cursor), total))
     return keep
 
-
 def cut_audio(in_path, out_path, ext, keep):
     n     = len(keep)
     parts = [f"[0:a]atrim=start={s:.6f}:end={e:.6f},asetpts=PTS-STARTPTS[a{i}]" for i, (s, e) in enumerate(keep)]
@@ -297,7 +296,6 @@ def cut_audio(in_path, out_path, ext, keep):
         "flac": ["-c:a", "flac"],
     }.get(ext, ["-c:a", "aac", "-b:a", "192k"])
     run(["-i", in_path, "-filter_complex", ";".join(parts), "-map", "[outa]", *codec, out_path])
-
 
 def cut_video(in_path, out_path, keep):
     n, parts = len(keep), []
@@ -319,7 +317,6 @@ def cut_video(in_path, out_path, keep):
         out_path,
     ])
 
-
 def get_dur(path):
     r = subprocess.run(
         [FFPROBE, "-v", "quiet", "-print_format", "json", "-show_format", path],
@@ -327,20 +324,17 @@ def get_dur(path):
     )
     return float(json.loads(r.stdout)["format"]["duration"])
 
-
 def run(args):
-    # Hide console window on Windows
     kwargs = {}
     if sys.platform == "win32":
         si = subprocess.STARTUPINFO()
         si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        si.wShowWindow = 0  # SW_HIDE
+        si.wShowWindow = 0
         kwargs["startupinfo"] = si
         kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
     r = subprocess.run([FFMPEG, "-y"] + args, capture_output=True, text=True, **kwargs)
     if r.returncode != 0:
         raise RuntimeError(r.stderr[-800:])
-
 
 def _rm(p):
     try:
@@ -349,18 +343,15 @@ def _rm(p):
     except Exception:
         pass
 
-
 def fmt_sec(s):
     s = int(s)
     return f"{s // 60}m {s % 60}s" if s >= 60 else f"{s}s"
 
-
-# ── LAUNCH ──────────────────────────────────────────────────────────────
+# ── LAUNCH ───────────────────────────────────────────────────────────────
 def start_flask():
     import logging
     logging.getLogger("werkzeug").setLevel(logging.ERROR)
     app.run(debug=False, port=8080, use_reloader=False, threaded=True)
-
 
 if __name__ == "__main__":
     threading.Thread(target=start_flask, daemon=True).start()
