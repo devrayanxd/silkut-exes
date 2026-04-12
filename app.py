@@ -2,12 +2,12 @@ import os, sys, uuid, subprocess, json, re, time, threading
 from flask import Flask, request, jsonify, send_file, send_from_directory
 import static_ffmpeg
 
-# ── FFMPEG — resolved via static-ffmpeg (cross-platform, no bundling) ──
-static_ffmpeg.add_paths()          # adds ffmpeg + ffprobe to PATH once
+# ── FFMPEG ──────────────────────────────────────────────────────────────
+static_ffmpeg.add_paths()
 FFMPEG  = "ffmpeg"
 FFPROBE = "ffprobe"
 
-# ── PATHS ──────────────────────────────────────────────────────────────
+# ── PATHS ───────────────────────────────────────────────────────────────
 def get_base():
     if getattr(sys, 'frozen', False):
         return sys._MEIPASS
@@ -23,7 +23,24 @@ EXE_DIR  = get_exe_dir()
 FRONTEND = BASE
 UPLOADS  = os.path.join(EXE_DIR, "uploads")
 
-def get_output_dir():
+# ── SETTINGS FILE (persists output folder choice) ───────────────────────
+SETTINGS_PATH = os.path.join(EXE_DIR, "silkut_settings.json")
+
+def load_settings():
+    try:
+        with open(SETTINGS_PATH, "r") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def save_settings(data):
+    try:
+        with open(SETTINGS_PATH, "w") as f:
+            json.dump(data, f)
+    except Exception:
+        pass
+
+def get_default_output_dir():
     if sys.platform == "win32":
         desktop = os.path.join(os.path.expanduser("~"), "Desktop")
         if not os.path.isdir(desktop):
@@ -36,10 +53,14 @@ def get_output_dir():
             desktop = os.path.expanduser("~")
     return os.path.join(desktop, "Silkut")
 
-OUTPUTS = get_output_dir()
+def get_output_dir():
+    settings = load_settings()
+    folder = settings.get("output_folder", "")
+    if folder and os.path.isdir(folder):
+        return folder
+    return get_default_output_dir()
 
 os.makedirs(UPLOADS, exist_ok=True)
-os.makedirs(OUTPUTS, exist_ok=True)
 
 AUDIO_EXTS = {"mp3", "wav", "aac", "flac", "ogg", "m4a"}
 VIDEO_EXTS = {"mp4", "mkv", "mov", "avi", "webm"}
@@ -47,7 +68,7 @@ VIDEO_EXTS = {"mp4", "mkv", "mov", "avi", "webm"}
 app = Flask(__name__, static_folder=FRONTEND)
 
 
-# ── FRONTEND ───────────────────────────────────────────────────────────
+# ── FRONTEND ────────────────────────────────────────────────────────────
 @app.route("/")
 def index():
     return send_from_directory(FRONTEND, "app.html")
@@ -57,7 +78,52 @@ def static_files(filename):
     return send_from_directory(FRONTEND, filename)
 
 
-# ── UPLOAD ─────────────────────────────────────────────────────────────
+# ── SETTINGS API ────────────────────────────────────────────────────────
+@app.route("/settings", methods=["GET"])
+def get_settings_api():
+    settings = load_settings()
+    output_folder = settings.get("output_folder", "")
+    if not output_folder or not os.path.isdir(output_folder):
+        output_folder = get_default_output_dir()
+    return jsonify({"output_folder": output_folder})
+
+@app.route("/settings/folder", methods=["POST"])
+def set_folder():
+    """Open a native folder picker and save the chosen path."""
+    try:
+        import webview
+        windows = webview.windows
+        if windows:
+            result = windows[0].create_file_dialog(webview.FOLDER_DIALOG)
+            if result and len(result) > 0:
+                folder = result[0]
+                settings = load_settings()
+                settings["output_folder"] = folder
+                save_settings(settings)
+                os.makedirs(folder, exist_ok=True)
+                return jsonify({"ok": True, "folder": folder})
+        return jsonify({"ok": False, "error": "No window"})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)})
+
+@app.route("/settings/folder/manual", methods=["POST"])
+def set_folder_manual():
+    """Set folder from a manually typed path."""
+    data = request.get_json(silent=True) or {}
+    folder = data.get("folder", "").strip()
+    if not folder:
+        return jsonify({"ok": False, "error": "Empty path"})
+    try:
+        os.makedirs(folder, exist_ok=True)
+        settings = load_settings()
+        settings["output_folder"] = folder
+        save_settings(settings)
+        return jsonify({"ok": True, "folder": folder})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)})
+
+
+# ── UPLOAD ──────────────────────────────────────────────────────────────
 @app.route("/upload", methods=["POST"])
 def upload():
     f = request.files.get("file")
@@ -72,6 +138,9 @@ def upload():
     f.seek(0, 2)
     mb = f.tell() / 1048576
     f.seek(0)
+
+    OUTPUTS = get_output_dir()
+    os.makedirs(OUTPUTS, exist_ok=True)
 
     job      = str(uuid.uuid4())[:8]
     in_path  = os.path.join(UPLOADS, f"{job}.{ext}")
@@ -102,6 +171,7 @@ def upload():
 
     return jsonify({
         "download_url":      f"/download/{out_name}",
+        "stream_url":        f"/stream/{out_name}",
         "file_type":         ftype,
         "original_duration": fmt_sec(res["orig"]),
         "output_duration":   fmt_sec(res["out"]),
@@ -116,22 +186,22 @@ def upload():
     })
 
 
-# ── DOWNLOAD ───────────────────────────────────────────────────────────
+# ── DOWNLOAD / STREAM ───────────────────────────────────────────────────
 @app.route("/download/<n>")
 def download(n):
     if ".." in n or "/" in n or "\\" in n:
         return "bad request", 400
+    OUTPUTS = get_output_dir()
     path = os.path.join(OUTPUTS, n)
     if not os.path.exists(path):
         return jsonify({"error": "File not found"}), 404
     return send_file(path, as_attachment=True, download_name=n)
 
-
-# ── STREAM ─────────────────────────────────────────────────────────────
 @app.route("/stream/<n>", methods=["GET", "HEAD"])
 def stream(n):
     if ".." in n or "/" in n or "\\" in n:
         return "bad request", 400
+    OUTPUTS = get_output_dir()
     path = os.path.join(OUTPUTS, n)
     if not os.path.exists(path):
         return jsonify({"error": "File not found"}), 404
@@ -140,7 +210,7 @@ def stream(n):
     return send_file(path, as_attachment=False)
 
 
-# ── CORE PROCESSING ────────────────────────────────────────────────────
+# ── CORE PROCESSING ─────────────────────────────────────────────────────
 def process(in_path, out_path, ext, ftype, thresh, min_sil, padding, denoise):
     orig     = get_dur(in_path)
     silences = detect_silences(in_path, thresh, min_sil, orig, denoise)
@@ -259,7 +329,15 @@ def get_dur(path):
 
 
 def run(args):
-    r = subprocess.run([FFMPEG, "-y"] + args, capture_output=True, text=True)
+    # Hide console window on Windows
+    kwargs = {}
+    if sys.platform == "win32":
+        si = subprocess.STARTUPINFO()
+        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        si.wShowWindow = 0  # SW_HIDE
+        kwargs["startupinfo"] = si
+        kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+    r = subprocess.run([FFMPEG, "-y"] + args, capture_output=True, text=True, **kwargs)
     if r.returncode != 0:
         raise RuntimeError(r.stderr[-800:])
 
@@ -277,7 +355,7 @@ def fmt_sec(s):
     return f"{s // 60}m {s % 60}s" if s >= 60 else f"{s}s"
 
 
-# ── LAUNCH ─────────────────────────────────────────────────────────────
+# ── LAUNCH ──────────────────────────────────────────────────────────────
 def start_flask():
     import logging
     logging.getLogger("werkzeug").setLevel(logging.ERROR)
@@ -298,7 +376,7 @@ if __name__ == "__main__":
             min_size  = (800, 600),
             resizable = True,
         )
-        webview.start()          # auto-picks best GUI engine per platform
+        webview.start()
     except Exception:
         import webbrowser
         webbrowser.open("http://127.0.0.1:8080")
