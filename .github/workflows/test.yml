@@ -1,0 +1,50 @@
+name: Test Silkut
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download latest Silkut release
+        run: |
+          $release = Invoke-RestMethod "https://api.github.com/repos/silkut-exes/silkut-exes/releases/latest"
+          $asset = $release.assets | Where-Object { $_.name -like "*.exe" } | Select-Object -First 1
+          Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "Silkut.exe"
+        shell: pwsh
+
+      - name: Start Silkut EXE
+        run: Start-Process -FilePath ".\Silkut.exe" -WindowStyle Hidden
+        shell: pwsh
+
+      - name: Wait for Flask to start
+        run: Start-Sleep -Seconds 8
+        shell: pwsh
+
+      - name: Test with 1.mp4
+        run: |
+          python -c "
+          import requests, json
+          with open('1.mp4', 'rb') as f:
+              resp = requests.post(
+                  'http://127.0.0.1:8080/upload',
+                  files={'file': ('1.mp4', f, 'video/mp4')},
+                  data={'threshold': '-35', 'min_silence': '0.3', 'padding': '0.1', 'denoise': '0'},
+                  timeout=300
+              )
+          print('Status:', resp.status_code)
+          print(json.dumps(resp.json(), indent=2, ensure_ascii=False))
+          "
+
+      - name: Upload output
+        uses: actions/upload-artifact@v4
+        with:
+          name: silkut-output
+          path: C:/Users/runneradmin/Downloads/Silkut/
+          if-no-files-found: warn
+          retention-days: 3
