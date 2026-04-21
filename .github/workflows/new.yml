@@ -179,19 +179,6 @@ jobs:
         with:
           tag_name: v2.2
           name: Silkut v2.2 — Linux
-          body: |
-            ## Silkut v2.2 — Linux AppImage
-            **Publisher:** Orvil Software
-            **Package:** silkut.online.silkut
-
-            Works on Ubuntu, Linux Mint, Fedora and any modern Linux distro.
-            No installation needed.
-
-            ### How to run
-            ```bash
-            chmod +x Silkut-Linux.AppImage
-            ./Silkut-Linux.AppImage
-            ```
           files: Silkut-Linux.AppImage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
