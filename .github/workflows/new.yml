@@ -105,9 +105,6 @@ jobs:
           echo "Publisher : Orvil Software"         >> test-result.txt
           echo "Package   : silkut.online.silkut"   >> test-result.txt
           echo ""                                    >> test-result.txt
-          echo "Input file size: $(du -sh 1.mp4 | cut -f1)" >> test-result.txt
-          echo "Input duration: $(ffprobe -v quiet -print_format json -show_format 1.mp4 | python3 -c "import sys,json; d=json.load(sys.stdin); print(round(float(d['format']['duration']),2),'seconds')")" >> test-result.txt
-          echo "" >> test-result.txt
 
           python3 - << 'PYEOF' >> test-result.txt 2>&1
           import subprocess, json, re, time, os
@@ -116,32 +113,86 @@ jobs:
           FFPROBE = "ffprobe"
           INPUT   = "1.mp4"
           OUTPUT  = "1-silkut.mp4"
-          THRESH  = -35
+          THRESH  = -35.0
           MIN_SIL = 0.3
           PADDING = 0.1
 
           def get_dur(path):
               r = subprocess.run([FFPROBE,"-v","quiet","-print_format","json","-show_format",path],
-                                 capture_output=True,text=True)
+                                 capture_output=True, text=True)
               return float(json.loads(r.stdout)["format"]["duration"])
 
-          def detect_silences(path):
+          def detect_silences(path, total):
               af = f"silencedetect=noise={THRESH}dB:d={MIN_SIL}"
               r  = subprocess.run([FFMPEG,"-i",path,"-af",af,"-f","null","-"],
-                                  capture_output=True,text=True)
+                                  capture_output=True, text=True)
               starts = [float(x) for x in re.findall(r"silence_start:\s*([\d.eE+\-]+)", r.stderr)]
               ends   = [float(x) for x in re.findall(r"silence_end:\s*([\d.eE+\-]+)",   r.stderr)]
-              return list(zip(starts, ends))
+              out = []
+              for i, s in enumerate(starts):
+                  s = max(0.0, min(float(s), total))
+                  e = max(s, min(float(ends[i]) if i < len(ends) else total, total))
+                  if e - s >= MIN_SIL * 0.5:
+                      out.append((s, e))
+              return out
+
+          def build_keep(silences, total):
+              remove = []
+              for (s, e) in silences:
+                  rs, re_ = s + PADDING, e - PADDING
+                  if re_ - rs >= 0.02:
+                      remove.append([rs, re_])
+              if not remove:
+                  return [(0.0, total)]
+              remove.sort()
+              merged = [remove[0]]
+              for seg in remove[1:]:
+                  if seg[0] <= merged[-1][1] + 0.01:
+                      merged[-1][1] = max(merged[-1][1], seg[1])
+                  else:
+                      merged.append(seg)
+              keep, cursor = [], 0.0
+              for (rs, re_) in merged:
+                  if rs - cursor >= 0.02:
+                      keep.append((max(0.0, cursor), min(total, rs)))
+                  cursor = re_
+              if total - cursor >= 0.02:
+                  keep.append((max(0.0, cursor), total))
+              return keep
+
+          def cut_video(in_path, out_path, keep):
+              n, parts = len(keep), []
+              for i, (s, e) in enumerate(keep):
+                  parts += [
+                      f"[0:v]trim=start={s:.6f}:end={e:.6f},setpts=PTS-STARTPTS[v{i}]",
+                      f"[0:a]atrim=start={s:.6f}:end={e:.6f},asetpts=PTS-STARTPTS[a{i}]",
+                  ]
+              vi = "".join(f"[v{i}]" for i in range(n))
+              ai = "".join(f"[a{i}]" for i in range(n))
+              parts += [f"{vi}concat=n={n}:v=1:a=0[outv]", f"{ai}concat=n={n}:v=0:a=1[outa]"]
+              r = subprocess.run([
+                  FFMPEG, "-y", "-i", in_path,
+                  "-filter_complex", ";".join(parts),
+                  "-map", "[outv]", "-map", "[outa]",
+                  "-c:v", "libx264", "-preset", "fast", "-crf", "18",
+                  "-c:a", "aac", "-b:a", "192k",
+                  "-movflags", "+faststart",
+                  out_path,
+              ], capture_output=True, text=True)
+              if r.returncode != 0:
+                  print("FFMPEG ERROR:", r.stderr[-500:])
 
           orig     = get_dur(INPUT)
-          silences = detect_silences(INPUT)
+          silences = detect_silences(INPUT, orig)
+          keep     = build_keep(silences, orig)
+
+          print(f"Input size        : {round(os.path.getsize(INPUT)/1048576,1)} MB")
           print(f"Original duration : {round(orig,2)}s")
           print(f"Silences detected : {len(silences)}")
+          print(f"Segments kept     : {len(keep)}")
 
           t0 = time.time()
-          subprocess.run([FFMPEG,"-y","-i",INPUT,"-af",
-                          f"silenceremove=stop_periods=-1:stop_duration={MIN_SIL}:stop_threshold={THRESH}dB",
-                          "-c:v","copy",OUTPUT],capture_output=True)
+          cut_video(INPUT, OUTPUT, keep)
           elapsed = round(time.time()-t0,1)
 
           if os.path.exists(OUTPUT):
@@ -152,9 +203,9 @@ jobs:
               print(f"Removed           : {removed}s ({pct}%)")
               print(f"Process time      : {elapsed}s")
               print(f"Output size       : {round(os.path.getsize(OUTPUT)/1048576,1)} MB")
-              print("STATUS: SUCCESS")
+              print("STATUS: SUCCESS ✓")
           else:
-              print("STATUS: FAILED - output file not created")
+              print("STATUS: FAILED — output file not created")
           PYEOF
 
       - name: Upload test result
