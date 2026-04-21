@@ -29,7 +29,8 @@ jobs:
             desktop-file-utils \
             libgdk-pixbuf2.0-dev \
             zsync \
-            ffmpeg
+            ffmpeg \
+            xz-utils
 
       - name: Install Python dependencies
         run: |
@@ -37,8 +38,52 @@ jobs:
           pip install \
             flask \
             pywebview \
-            static-ffmpeg \
             pyinstaller
+
+      - name: Download static ffmpeg and ffprobe binaries
+        run: |
+          wget -q https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz -O /tmp/ffmpeg.tar.xz
+          mkdir -p /tmp/ffmpeg-static
+          tar -xf /tmp/ffmpeg.tar.xz -C /tmp/ffmpeg-static --strip-components=1
+          cp /tmp/ffmpeg-static/ffmpeg  ./ffmpeg
+          cp /tmp/ffmpeg-static/ffprobe ./ffprobe
+          chmod +x ./ffmpeg ./ffprobe
+          echo "ffmpeg version: $(./ffmpeg -version 2>&1 | head -1)"
+
+      - name: Patch app.py to use bundled ffmpeg
+        run: |
+          python3 - << 'PYEOF'
+          content = open("app.py").read()
+
+          patch = '''
+          import os as _os, sys as _sys
+
+          def _get_ffmpeg():
+              if getattr(_sys, "frozen", False):
+                  base = _sys._MEIPASS
+              else:
+                  base = _os.path.dirname(_os.path.abspath(__file__))
+              ff  = _os.path.join(base, "ffmpeg")
+              ffp = _os.path.join(base, "ffprobe")
+              if _os.path.isfile(ff):
+                  return ff, ffp
+              return "ffmpeg", "ffprobe"
+
+          FFMPEG, FFPROBE = _get_ffmpeg()
+          '''
+
+          # Remove any existing static_ffmpeg import and FFMPEG/FFPROBE lines
+          import re
+          content = re.sub(r"import static_ffmpeg.*\n", "", content)
+          content = re.sub(r"static_ffmpeg\.add_paths\(\).*\n", "", content)
+          content = re.sub(r"FFMPEG\s*=\s*[\"']ffmpeg[\"']\s*\n", "", content)
+          content = re.sub(r"FFPROBE\s*=\s*[\"']ffprobe[\"']\s*\n", "", content)
+
+          # Insert patch after first import block
+          content = patch + content
+          open("app.py", "w").write(content)
+          print("app.py patched successfully")
+          PYEOF
 
       - name: Build binary with PyInstaller
         run: |
@@ -48,7 +93,8 @@ jobs:
             --noconsole \
             --add-data "app.html:." \
             --add-data "Silkut.png:." \
-            --collect-all static_ffmpeg \
+            --add-binary "ffmpeg:." \
+            --add-binary "ffprobe:." \
             --collect-all webview \
             --hidden-import flask \
             --hidden-import werkzeug \
@@ -99,6 +145,8 @@ jobs:
 
           ARCH=x86_64 ./appimagetool AppDir Silkut-Linux.AppImage
 
+          echo "AppImage size: $(du -sh Silkut-Linux.AppImage | cut -f1)"
+
       - name: Test 1.mp4 with Silkut
         run: |
           echo "=== Silkut v2.2 — Test Report ===" > test-result.txt
@@ -109,8 +157,8 @@ jobs:
           python3 - << 'PYEOF' >> test-result.txt 2>&1
           import subprocess, json, re, time, os
 
-          FFMPEG  = "ffmpeg"
-          FFPROBE = "ffprobe"
+          FFMPEG  = "./ffmpeg"
+          FFPROBE = "./ffprobe"
           INPUT   = "1.mp4"
           OUTPUT  = "1-silkut.mp4"
           THRESH  = -35.0
