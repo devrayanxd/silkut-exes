@@ -1,0 +1,197 @@
+name: Build Silkut Linux
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            python3-dev \
+            libfuse2 \
+            wget \
+            patchelf \
+            desktop-file-utils \
+            libgdk-pixbuf2.0-dev \
+            zsync \
+            ffmpeg
+
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install \
+            flask \
+            pywebview \
+            static-ffmpeg \
+            pyinstaller
+
+      - name: Build binary with PyInstaller
+        run: |
+          pyinstaller app.py \
+            --name Silkut \
+            --onefile \
+            --noconsole \
+            --add-data "app.html:." \
+            --add-data "Silkut.png:." \
+            --collect-all static_ffmpeg \
+            --collect-all webview \
+            --hidden-import flask \
+            --hidden-import werkzeug \
+            --hidden-import werkzeug.routing \
+            --hidden-import werkzeug.routing.exceptions \
+            --hidden-import difflib \
+            --hidden-import xml \
+            --hidden-import xml.etree.ElementTree \
+            --hidden-import pkg_resources
+
+      - name: Package as AppImage
+        run: |
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
+          chmod +x appimagetool
+
+          mkdir -p AppDir/usr/bin
+          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+          mkdir -p AppDir/usr/share/applications
+
+          cp dist/Silkut AppDir/usr/bin/Silkut
+          chmod +x AppDir/usr/bin/Silkut
+          cp Silkut.png AppDir/usr/share/icons/hicolor/256x256/apps/silkut.png
+          cp Silkut.png AppDir/silkut.png
+
+          cat > AppDir/usr/share/applications/silkut.desktop << EOF
+          [Desktop Entry]
+          Name=Silkut
+          GenericName=Silence Remover
+          Exec=Silkut
+          Icon=silkut
+          Type=Application
+          Categories=AudioVideo;
+          Comment=Remove silences from audio and video
+          X-Publisher=Orvil Software
+          X-AppImage-Name=Silkut
+          X-AppImage-Version=2.2
+          X-AppImage-Arch=x86_64
+          EOF
+
+          cp AppDir/usr/share/applications/silkut.desktop AppDir/silkut.desktop
+
+          cat > AppDir/AppRun << 'EOF'
+          #!/bin/bash
+          HERE="$(dirname "$(readlink -f "${0}")")"
+          exec "$HERE/usr/bin/Silkut" "$@"
+          EOF
+          chmod +x AppDir/AppRun
+
+          ARCH=x86_64 ./appimagetool AppDir Silkut-Linux.AppImage
+
+      - name: Test 1.mp4 with Silkut
+        run: |
+          echo "=== Silkut v2.2 — Test Report ===" > test-result.txt
+          echo "Publisher : Orvil Software"         >> test-result.txt
+          echo "Package   : silkut.online.silkut"   >> test-result.txt
+          echo ""                                    >> test-result.txt
+          echo "Input file size: $(du -sh 1.mp4 | cut -f1)" >> test-result.txt
+          echo "Input duration: $(ffprobe -v quiet -print_format json -show_format 1.mp4 | python3 -c "import sys,json; d=json.load(sys.stdin); print(round(float(d['format']['duration']),2),'seconds')")" >> test-result.txt
+          echo "" >> test-result.txt
+
+          python3 - << 'PYEOF' >> test-result.txt 2>&1
+          import subprocess, json, re, time, os
+
+          FFMPEG  = "ffmpeg"
+          FFPROBE = "ffprobe"
+          INPUT   = "1.mp4"
+          OUTPUT  = "1-silkut.mp4"
+          THRESH  = -35
+          MIN_SIL = 0.3
+          PADDING = 0.1
+
+          def get_dur(path):
+              r = subprocess.run([FFPROBE,"-v","quiet","-print_format","json","-show_format",path],
+                                 capture_output=True,text=True)
+              return float(json.loads(r.stdout)["format"]["duration"])
+
+          def detect_silences(path):
+              af = f"silencedetect=noise={THRESH}dB:d={MIN_SIL}"
+              r  = subprocess.run([FFMPEG,"-i",path,"-af",af,"-f","null","-"],
+                                  capture_output=True,text=True)
+              starts = [float(x) for x in re.findall(r"silence_start:\s*([\d.eE+\-]+)", r.stderr)]
+              ends   = [float(x) for x in re.findall(r"silence_end:\s*([\d.eE+\-]+)",   r.stderr)]
+              return list(zip(starts, ends))
+
+          orig     = get_dur(INPUT)
+          silences = detect_silences(INPUT)
+          print(f"Original duration : {round(orig,2)}s")
+          print(f"Silences detected : {len(silences)}")
+
+          t0 = time.time()
+          subprocess.run([FFMPEG,"-y","-i",INPUT,"-af",
+                          f"silenceremove=stop_periods=-1:stop_duration={MIN_SIL}:stop_threshold={THRESH}dB",
+                          "-c:v","copy",OUTPUT],capture_output=True)
+          elapsed = round(time.time()-t0,1)
+
+          if os.path.exists(OUTPUT):
+              out     = get_dur(OUTPUT)
+              removed = round(orig - out, 2)
+              pct     = round(removed / orig * 100, 1)
+              print(f"Output duration   : {round(out,2)}s")
+              print(f"Removed           : {removed}s ({pct}%)")
+              print(f"Process time      : {elapsed}s")
+              print(f"Output size       : {round(os.path.getsize(OUTPUT)/1048576,1)} MB")
+              print("STATUS: SUCCESS")
+          else:
+              print("STATUS: FAILED - output file not created")
+          PYEOF
+
+      - name: Upload test result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-result
+          path: |
+            test-result.txt
+            1-silkut.mp4
+          retention-days: 7
+
+      - name: Upload AppImage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Silkut-Linux
+          path: Silkut-Linux.AppImage
+          retention-days: 14
+
+      - name: Create Release v2.2
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v2.2
+          name: Silkut v2.2 — Linux
+          body: |
+            ## Silkut v2.2 — Linux AppImage
+            **Publisher:** Orvil Software
+            **Package:** silkut.online.silkut
+
+            Works on Ubuntu, Linux Mint, Fedora and any modern Linux distro.
+            No installation needed.
+
+            ### How to run
+            ```bash
+            chmod +x Silkut-Linux.AppImage
+            ./Silkut-Linux.AppImage
+            ```
+          files: Silkut-Linux.AppImage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
